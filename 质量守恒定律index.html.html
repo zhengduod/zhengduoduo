@@ -1,0 +1,2731 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>质量守恒定律 · 沉浸式虚拟实验室</title>
+<style>
+:root{
+  --card:#ffffff; --line:#e3eaf0; --txt:#3a4c5e; --txt-strong:#22323f;
+  --muted:#6f8395; --primary:#4a9db0; --amber:#b7832f; --green:#2f8f6b; --red:#bf5754;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{overflow-x:hidden}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+  color:var(--txt);min-height:100vh;-webkit-font-smoothing:antialiased;line-height:1.6;
+  background-color:#f3f7f8;
+  background-image:
+    radial-gradient(1000px 520px at 8% -12%, #e2eff2 0%, transparent 62%),
+    radial-gradient(820px 460px at 100% 0%, #eff3e6 0%, transparent 58%),
+    linear-gradient(180deg,#f0f6f7 0%, #f5f8f4 55%, #f8f6f0 100%);
+  background-attachment:fixed;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+#app{max-width:600px;margin:0 auto;padding:0 16px 56px;position:relative}
+
+#topbar{
+  display:none;align-items:center;justify-content:space-between;gap:8px;
+  padding:14px 0 10px;position:sticky;top:0;z-index:60;
+  background:linear-gradient(180deg,rgba(243,247,248,.98) 65%,rgba(243,247,248,0));
+  backdrop-filter:blur(6px);flex-wrap:wrap;
+}
+#topbar.on{display:flex}
+.hud{display:flex;align-items:center;gap:6px;margin-left:auto;flex-wrap:wrap}
+.score-chip{
+  font-size:13px;font-weight:700;color:#a9722b;background:#fdf5e8;
+  border:1px solid #f2e3c8;padding:7px 13px;border-radius:20px;white-space:nowrap;
+}
+.score-chip b{font-size:15px}
+
+.btn{
+  border:1px solid var(--line);background:#fff;color:var(--txt);
+  padding:9px 13px;border-radius:12px;font-size:13px;font-weight:600;
+  cursor:pointer;transition:.18s;font-family:inherit;white-space:nowrap;
+}
+.btn:active{transform:scale(.96);background:#f6fafb}
+.btn.primary{
+  width:100%;padding:14px;border:none;margin-top:12px;
+  background:linear-gradient(135deg,#5aadbd,#3f8b9d);color:#fff;
+  font-size:15.5px;font-weight:700;letter-spacing:.5px;
+  box-shadow:0 8px 20px rgba(74,157,176,.26);border-radius:14px;
+}
+.btn.primary:active{transform:scale(.98)}
+.btn.primary:disabled{opacity:.65;cursor:wait;transform:none}
+.btn.soft{
+  width:100%;padding:13px;margin-top:10px;border-radius:14px;
+  background:#f2f8fa;border:1px solid #d8e6eb;color:#3b7c8c;font-size:14px;font-weight:600;
+}
+.btn.mini{padding:6px 10px;font-size:12px;border-radius:10px}
+
+.screen{display:none;animation:fadeUp .3s ease both}
+.screen.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+.hero{text-align:center;padding:46px 0 26px}
+.hero h1{font-size:25px;letter-spacing:.5px;color:var(--txt-strong);font-weight:800}
+.hero .sub{color:var(--muted);font-size:13px;margin-top:10px;letter-spacing:1.5px}
+.card{
+  background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;
+  box-shadow:0 8px 26px rgba(90,120,140,.08);
+}
+.card label{font-size:13px;color:var(--muted);display:block;margin-bottom:10px}
+input[type=text]{
+  width:100%;padding:14px 16px;border-radius:13px;border:1px solid #dde6ec;
+  background:#f8fbfc;color:var(--txt-strong);font-size:16px;outline:none;
+  transition:.2s;font-family:inherit;
+}
+input:focus{border-color:#7cc0cf;background:#fff;box-shadow:0 0 0 3px rgba(90,173,189,.13)}
+.hint{text-align:center;color:var(--muted);font-size:12px;margin-top:12px;line-height:1.7}
+
+.home-head{text-align:center;padding:16px 0 20px}
+.home-head h1{font-size:21px;color:var(--txt-strong);font-weight:800;letter-spacing:.5px}
+.home-head p{font-size:13px;color:var(--muted);margin-top:8px}
+.home-head .who{font-size:12px;color:#4a9db0;margin-top:8px;font-weight:600}
+.task-list{display:flex;flex-direction:column;gap:12px;margin-top:4px}
+.task-card{
+  display:flex;align-items:flex-start;gap:14px;padding:16px;border-radius:18px;
+  background:#fff;border:1px solid var(--line);cursor:pointer;transition:.2s;
+  box-shadow:0 5px 18px rgba(90,120,140,.07);position:relative;overflow:hidden;
+}
+.task-card:active{transform:scale(.985)}
+.task-card::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:4px;
+  background:#cfdde4;transition:.25s;
+}
+.task-card.done::before{background:linear-gradient(180deg,#4a9db0,#2f8f6b)}
+.task-icon{
+  width:48px;height:48px;flex:0 0 auto;border-radius:14px;
+  display:flex;align-items:center;justify-content:center;font-size:24px;
+  background:#f2f8fa;border:1px solid #e0eef2;
+}
+.task-main{flex:1;min-width:0}
+.task-name{font-size:11px;color:#4a9db0;font-weight:700;letter-spacing:1px}
+.task-title{font-size:15.5px;font-weight:800;color:var(--txt-strong);margin:2px 0 4px}
+.task-desc{font-size:12.5px;color:var(--muted);line-height:1.6}
+.task-status{
+  position:absolute;right:14px;top:14px;font-size:11px;font-weight:700;
+  padding:3px 9px;border-radius:9px;background:#f0f3f6;color:#8a9aa8;
+}
+.task-status.ok{background:#eef8f2;color:#2f8f6b}
+
+.task-head{display:flex;align-items:center;gap:10px;margin:4px 0 14px;flex-wrap:wrap}
+.task-badge{
+  font-size:11px;font-weight:800;color:#fff;background:#5aadbd;
+  padding:4px 11px;border-radius:9px;letter-spacing:1px;
+}
+.task-head h2{font-size:17px;color:var(--txt-strong);font-weight:800}
+
+.story{
+  background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;
+  font-size:13.5px;line-height:1.9;color:var(--txt);margin-bottom:14px;
+  box-shadow:0 4px 14px rgba(90,120,140,.05);
+}
+.story p+p{margin-top:10px}
+.story b{color:#3a7f8e}
+
+.input-table{
+  width:100%;border-collapse:separate;border-spacing:0;background:#fff;
+  border:1px solid var(--line);border-radius:16px;overflow:hidden;
+  box-shadow:0 4px 14px rgba(90,120,140,.05);margin-bottom:14px;font-size:13px;
+}
+.input-table th{
+  background:#f2f8fa;color:#3b7c8c;font-weight:700;font-size:12.5px;
+  padding:11px 12px;text-align:left;border-bottom:1px solid var(--line);
+}
+.input-table td{
+  padding:11px 12px;border-bottom:1px solid #eef2f5;vertical-align:top;
+  color:var(--txt);line-height:1.7;
+}
+.input-table tr:last-child td{border-bottom:none}
+.input-table td:first-child{
+  width:30%;font-weight:700;color:var(--txt-strong);background:#fafcfd;font-size:12.5px;
+}
+.input-table textarea{
+  width:100%;min-height:56px;padding:9px 11px;border-radius:10px;
+  border:1px solid #dde6ec;background:#f8fbfc;color:var(--txt-strong);
+  font-size:13.5px;line-height:1.65;outline:none;resize:vertical;font-family:inherit;
+  transition:.18s;
+}
+.input-table textarea:focus{border-color:#7cc0cf;background:#fff;
+  box-shadow:0 0 0 3px rgba(90,173,189,.12)}
+.input-table textarea::placeholder{color:#a9b8c4}
+
+.fill-block{
+  background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;
+  box-shadow:0 4px 14px rgba(90,120,140,.05);margin-bottom:14px;
+  font-size:14px;line-height:2.2;color:var(--txt);
+}
+.fill-block .fill-title{
+  font-size:12px;font-weight:800;color:#4a9db0;letter-spacing:1px;margin-bottom:8px;
+}
+select{
+  padding:8px 11px;border-radius:10px;border:1.5px solid #cfdde4;background:#f8fbfc;
+  color:var(--txt-strong);font-size:13.5px;font-family:inherit;outline:none;
+  transition:.18s;max-width:100%;
+}
+select:focus{border-color:#7cc0cf;background:#fff}
+select.ok{border-color:#a9d8c2;background:#f2fbf6;color:#22785a;font-weight:700}
+select.bad{border-color:#e5b3b0;background:#fdf4f3;color:#a54440}
+
+.bench{
+  min-height:250px;display:flex;align-items:flex-end;justify-content:center;
+  padding:22px 10px 12px;border-radius:18px;margin-bottom:14px;
+  background:linear-gradient(180deg,#ffffff,#f7fbfc);
+  border:1px solid var(--line);position:relative;overflow:hidden;
+  box-shadow:0 6px 20px rgba(90,120,140,.07);
+}
+.bench::after{
+  content:'';position:absolute;left:0;right:0;bottom:0;height:46px;
+  background:linear-gradient(180deg,transparent,rgba(74,157,176,.06));pointer-events:none;
+}
+.drop-zone{
+  width:100%;min-height:120px;border:2px dashed #a9cfd9;border-radius:16px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+  color:#4a8b9a;font-size:13px;background:#f4fafb;transition:.2s;padding:16px;
+}
+.drop-zone.drop-hover{border-color:#e0a94d;background:#fdf7ea;color:#b7832f}
+.dz-icon{font-size:30px}
+
+.scale{position:relative;width:100%;height:250px}
+.scale-arm{
+  position:absolute;left:50%;top:48px;width:240px;margin-left:-120px;height:8px;
+  background:linear-gradient(90deg,#9aa9b6,#dbe4ea,#9aa9b6);border-radius:4px;
+  transform-origin:50% 50%;transition:transform 1.1s cubic-bezier(.34,1.56,.64,1);
+  box-shadow:0 2px 6px rgba(90,120,140,.18);
+}
+.scale-column{position:absolute;left:50%;bottom:32px;width:12px;height:104px;margin-left:-6px;
+  background:linear-gradient(180deg,#b7c5d0,#8d9dab);border-radius:6px}
+.scale-base{position:absolute;left:50%;bottom:18px;width:148px;height:16px;margin-left:-74px;
+  background:linear-gradient(180deg,#b7c5d0,#7f909f);border-radius:9px;
+  box-shadow:0 6px 14px rgba(90,120,140,.22)}
+.pan{position:absolute;top:10px;width:110px;height:152px;display:flex;flex-direction:column;
+  align-items:center;justify-content:flex-end;gap:2px}
+.pan.left{left:-25px}
+.pan.right{right:-25px}
+.pan-plate{width:98px;height:10px;border-radius:50%;
+  background:linear-gradient(180deg,#d7e1e8,#9aa9b6);box-shadow:0 4px 10px rgba(90,120,140,.2)}
+.pan-hint{font-size:11px;color:#4a8b9a;border:1.5px dashed #a9cfd9;
+  border-radius:10px;padding:8px 10px;background:#f4fafb;text-align:center;line-height:1.5}
+.weight{width:40px;height:34px;border-radius:5px;background:linear-gradient(160deg,#a9b8c4,#7d8d9c);
+  font-size:9px;display:flex;align-items:center;justify-content:center;color:#fff;
+  box-shadow:0 3px 8px rgba(90,120,140,.22)}
+
+.beaker{position:relative;width:72px;height:72px;border:2px solid #8fbed0;
+  border-top:none;border-radius:0 0 10px 10px;background:rgba(180,220,235,.22);
+  transition:transform .7s ease}
+.beaker.drop-hover{border-color:#e0a94d;background:#fdf7ea;box-shadow:0 0 0 3px rgba(224,169,77,.18)}
+.beaker .powder{position:absolute;left:3px;right:3px;bottom:2px;height:20px;
+  background:linear-gradient(180deg,#fdfefe,#dbe5ec);border-radius:0 0 8px 8px;opacity:.95}
+.beaker .tube{position:absolute;left:50%;bottom:6px;width:16px;height:52px;margin-left:-8px;
+  border:2px solid #a9bcc9;border-radius:0 0 8px 8px;
+  background:linear-gradient(180deg,rgba(150,205,225,.65),rgba(150,205,225,.35));
+  display:flex;align-items:flex-end;justify-content:center;font-size:8px;color:#3a7f8e}
+
+.observe-stage{position:relative;width:100%;height:236px;
+  display:flex;align-items:flex-end;justify-content:center}
+.gas-escape{position:absolute;top:0;left:0;right:0;height:120px;pointer-events:none}
+.gas-escape i{
+  position:absolute;bottom:0;font-size:11px;color:#8a9aa8;font-weight:800;
+  font-style:normal;animation:escapeUp 2.3s linear infinite;opacity:0;letter-spacing:.5px;
+}
+@keyframes escapeUp{
+  0%{transform:translateY(0) scale(.85);opacity:0}
+  22%{opacity:.9}
+  100%{transform:translateY(-88px) scale(1.12);opacity:0}
+}
+.big-beaker{
+  position:relative;width:112px;height:112px;
+  border:3px solid #8fbed0;border-top:none;border-radius:0 0 14px 14px;
+  background:rgba(180,220,235,.22);transform:rotate(-14deg);
+  transform-origin:bottom center;margin-bottom:32px;
+}
+.big-beaker .big-powder{
+  position:absolute;left:6px;right:6px;bottom:4px;height:26px;
+  background:linear-gradient(180deg,#fdfefe,#dbe5ec);border-radius:0 0 12px 12px;opacity:.95;
+}
+.big-beaker .big-tube{
+  position:absolute;left:50%;bottom:8px;width:20px;height:66px;margin-left:-10px;
+  border:2px solid #a9bcc9;border-radius:0 0 10px 10px;
+  background:linear-gradient(180deg,rgba(150,205,225,.7),rgba(150,205,225,.35));
+  transform:rotate(34deg);transform-origin:bottom center;
+  font-size:9px;color:#3a7f8e;display:flex;align-items:flex-end;justify-content:center;
+}
+.bubbles{position:absolute;inset:0;overflow:hidden;border-radius:0 0 14px 14px}
+.bubbles i{position:absolute;bottom:6px;width:9px;height:9px;border-radius:50%;
+  background:rgba(150,195,220,.85);animation:riseBig 1.7s linear infinite}
+@keyframes riseBig{
+  0%{transform:translateY(0) scale(.6);opacity:0}
+  20%{opacity:1}
+  100%{transform:translateY(-95px) scale(1.1);opacity:0}
+}
+
+.flask-wrap{position:relative;display:inline-flex;flex-direction:column;align-items:center;padding-top:86px}
+.flask-wrap.drop-hover{filter:drop-shadow(0 0 10px rgba(224,169,77,.55))}
+.flask{width:132px;height:158px;display:block}
+.balloon-slot{
+  position:absolute;left:50%;transform:translateX(-50%);bottom:150px;
+  width:104px;height:86px;display:flex;align-items:flex-end;justify-content:center;
+  z-index:4;border-radius:14px;transition:.2s;
+}
+.slot-hint{
+  font-size:11px;color:#c06660;border:1.5px dashed #dfa6a2;border-radius:10px;
+  padding:6px 10px;background:#fdf2f1;white-space:nowrap;transition:.18s;pointer-events:none;
+}
+.balloon-slot.drop-hover .slot-hint{
+  color:#b7832f;border-color:#e0a94d;background:#fdf7ea;transform:scale(1.08);
+}
+.balloon{
+  width:0;height:0;opacity:0;pointer-events:none;border-radius:50% 50% 46% 46%;
+  background:radial-gradient(circle at 34% 28%,#f0a9a6,#d96b67 65%,#b04a47);
+  box-shadow:0 0 18px rgba(217,107,103,.32);
+}
+.balloon.inflated{animation:balloonPop .7s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes balloonPop{
+  0%{width:0;height:0;opacity:0}
+  65%{width:74px;height:74px;opacity:1}
+  100%{width:66px;height:66px;opacity:1}
+}
+.flask-inner{position:absolute;left:0;right:0;bottom:14px;display:flex;
+  justify-content:center;align-items:flex-end;gap:6px;pointer-events:none}
+.flask-powder{width:52px;height:16px;border-radius:0 0 10px 10px;
+  background:linear-gradient(180deg,#fdfefe,#dbe5ec);opacity:.95}
+.flask-tube{width:16px;height:56px;border:2px solid #a9bcc9;border-radius:0 0 8px 8px;
+  background:linear-gradient(180deg,rgba(150,205,225,.7),rgba(150,205,225,.35));
+  font-size:8px;color:#3a7f8e;display:flex;align-items:flex-end;justify-content:center}
+.flask-bubbles{position:absolute;left:50%;bottom:20px;width:64px;height:70px;
+  margin-left:-32px;overflow:hidden;pointer-events:none}
+.flask-bubbles i{position:absolute;bottom:0;width:8px;height:8px;border-radius:50%;
+  background:rgba(150,195,220,.85);animation:riseBig 1.5s linear infinite}
+
+.balance-badge{
+  display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:20px;
+  font-size:14px;font-weight:700;background:#eef8f2;border:1.5px solid #b9e0cd;color:#2f8f6b;
+}
+
+.tray{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
+.tile{
+  display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px;
+  border-radius:15px;background:#fff;border:1px solid var(--line);
+  font-size:12.5px;font-weight:600;color:var(--txt);cursor:grab;transition:.18s;
+  touch-action:none;user-select:none;-webkit-user-select:none;
+  box-shadow:0 3px 10px rgba(90,120,140,.06);
+}
+.tile:active{transform:scale(.96)}
+.tile.selected{border-color:#e0a94d;background:#fdf7ea;box-shadow:0 0 0 3px rgba(224,169,77,.16)}
+.tile.dragging{opacity:.32}
+.tile .ti{font-size:26px;line-height:1;pointer-events:none}
+.tile span{pointer-events:none}
+.drag-ghost{
+  position:fixed;z-index:9999;pointer-events:none;opacity:.94;
+  transform:rotate(-4deg) scale(1.05);border-radius:15px;background:#e8f4f8;
+  border:2px solid var(--primary);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:6px;font-size:12.5px;
+  font-weight:600;color:var(--txt-strong);box-shadow:0 14px 30px rgba(90,120,140,.3);
+}
+
+.observe-tip{
+  margin:12px 0 4px;padding:14px 16px;border-radius:14px;background:#fdf7ea;
+  border:1px solid #f0dcbc;color:#a9722b;font-size:13.5px;text-align:center;
+  line-height:1.7;font-weight:600;
+}
+.result-note{
+  margin-top:12px;padding:16px;border-radius:14px;font-size:13.5px;line-height:1.85;
+  background:#eef8f2;border:1px solid #c8e6d6;color:#33715a;
+}
+.result-note b{color:#22785a}
+.result-note.warn{background:#fdf5e8;border-color:#f0dcbc;color:#9a6a28}
+.result-note.warn b{color:#a9722b}
+.step-title{
+  font-size:14px;font-weight:700;color:var(--txt-strong);margin-bottom:12px;
+  display:flex;align-items:center;gap:8px;
+}
+.step-title .badge{
+  font-size:11px;font-weight:700;color:#fff;background:#5aadbd;
+  padding:3px 9px;border-radius:8px;letter-spacing:.5px;
+}
+
+.q-card{
+  background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;
+  margin-bottom:12px;box-shadow:0 4px 14px rgba(90,120,140,.06);
+}
+.q-title{font-size:14.5px;font-weight:700;line-height:1.65;display:flex;gap:10px;
+  margin-bottom:12px;color:var(--txt-strong)}
+.q-no{flex:0 0 22px;height:22px;border-radius:7px;background:#5aadbd;color:#fff;
+  font-size:12px;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{
+  padding:12px 14px;border-radius:12px;border:1px solid #e3eaf0;background:#fafcfd;
+  font-size:13.5px;line-height:1.55;color:var(--txt);cursor:pointer;transition:.18s;
+}
+.opt:active{transform:scale(.985)}
+.opt.correct{background:#eef8f2;border-color:#a9d8c2;color:#22785a;font-weight:600}
+.opt.wrong{background:#fdf0ef;border-color:#e5b3b0;color:#a54440}
+.opt.locked{cursor:default}
+.q-hint{
+  margin-top:12px;padding:12px 14px;border-radius:12px;font-size:13px;line-height:1.75;
+  background:#fdf7ea;border-left:3px solid #e0a94d;color:#96702f;
+}
+.q-hint.ok{background:#eef8f2;border-left-color:#2f8f6b;color:#22785a}
+
+.rank-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+.rank-head .t{font-size:16px;font-weight:800;color:var(--txt-strong)}
+.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#2f8f6b;
+  margin-right:6px;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.rank-row{
+  display:flex;align-items:center;gap:10px;padding:13px 14px;border-radius:14px;
+  background:#fff;border:1px solid var(--line);margin-bottom:9px;
+  box-shadow:0 3px 10px rgba(90,120,140,.05);
+}
+.rank-row.me{border-color:#a9d4de;background:#f4fbfc}
+.rank-no{width:30px;height:30px;border-radius:10px;display:flex;align-items:center;
+  justify-content:center;font-size:13px;font-weight:800;background:#eef2f5;
+  color:#6f8395;flex:0 0 auto}
+.rank-no.g1{background:#f7e5b8;color:#8a6516}
+.rank-no.g2{background:#e3eaf0;color:#5b6d7c}
+.rank-no.g3{background:#f2ddca;color:#8a5a2e}
+.rank-name{flex:1;font-size:14px;font-weight:600;color:var(--txt-strong);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.rank-sub{font-size:11px;color:var(--muted);flex:0 0 auto}
+.rank-score{font-size:15px;font-weight:800;color:#b0762d;flex:0 0 auto;
+  min-width:52px;text-align:right}
+
+.mon-head{
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;
+  margin-bottom:12px;
+}
+.mon-head .t{font-size:16px;font-weight:800;color:var(--txt-strong)}
+.mon-toolbar{display:flex;gap:6px;flex-wrap:wrap}
+.cloud-banner{
+  border-radius:12px;padding:11px 14px;font-size:12px;line-height:1.75;margin-bottom:12px;
+  background:#eef7f9;border:1px dashed #a9cfd9;color:#3b7c8c;
+}
+.cloud-banner.err{background:#fdf4f3;border-color:#e5b3b0;color:#a54440}
+.cloud-banner b{color:#2f8f6b}
+.cloud-banner.err b{color:#8a3a36}
+
+.mon-tabs{
+  display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;padding-bottom:4px;
+  -webkit-overflow-scrolling:touch;
+}
+.mon-tabs::-webkit-scrollbar{display:none}
+.mon-tab{
+  flex:0 0 auto;padding:9px 15px;border-radius:12px;border:1px solid var(--line);
+  background:#fff;color:var(--txt);font-size:13px;font-weight:700;cursor:pointer;
+  font-family:inherit;transition:.18s;white-space:nowrap;
+  box-shadow:0 2px 8px rgba(90,120,140,.05);
+}
+.mon-tab:active{transform:scale(.96)}
+.mon-tab.active{
+  background:linear-gradient(135deg,#5aadbd,#3f8b9d);color:#fff;border-color:transparent;
+  box-shadow:0 5px 14px rgba(74,157,176,.26);
+}
+
+.mon-summary{
+  background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 14px;
+  font-size:12.5px;color:var(--muted);margin-bottom:12px;line-height:1.8;
+  box-shadow:0 3px 10px rgba(90,120,140,.05);
+}
+.mon-summary b{color:var(--txt-strong);font-size:14px}
+.mon-summary .hl{color:#4a9db0;font-weight:800}
+
+.mon-card{
+  background:#fff;border:1px solid var(--line);border-radius:16px;
+  margin-bottom:11px;overflow:hidden;box-shadow:0 4px 14px rgba(90,120,140,.06);
+}
+.mon-card-head{
+  display:flex;align-items:center;gap:10px;padding:13px 15px;
+  background:#fafcfd;border-bottom:1px solid #eef2f5;
+}
+.mon-card-head .nm{font-size:14.5px;font-weight:800;color:var(--txt-strong);flex:0 0 auto}
+.mon-card-head .pgs{font-size:11px;font-weight:700;padding:3px 8px;border-radius:8px;
+  background:#eef2f5;color:#6f8395;flex:0 0 auto}
+.mon-card-head .pgs.all{background:#eef8f2;color:#2f8f6b}
+.mon-card-head .sc{font-size:13.5px;font-weight:800;color:#b0762d;margin-left:auto;flex:0 0 auto}
+.mon-card-body{padding:4px 15px 15px}
+
+.mon-row{
+  display:flex;gap:8px;font-size:12.5px;line-height:1.7;padding:7px 0;
+  border-bottom:1px dashed #eef2f5;
+}
+.mon-row:last-child{border-bottom:none}
+.mon-row .k{flex:0 0 78px;color:var(--muted);font-weight:700;font-size:12px}
+.mon-row .v{flex:1;color:var(--txt);word-break:break-word;min-width:0}
+.mon-row .v.empty{color:#b6c2cc;font-style:italic}
+.mon-row .v.right{color:#22785a;font-weight:600}
+.mon-row .v.wrong{color:#a54440;font-weight:600}
+.mon-row .v.tag::before{
+  content:'';display:inline-block;width:6px;height:6px;border-radius:50%;
+  margin-right:5px;vertical-align:middle;background:#cfdde4;
+}
+.mon-row .v.right.tag::before{background:#2f8f6b}
+.mon-row .v.wrong.tag::before{background:#bf5754}
+
+.mon-empty{
+  text-align:center;padding:46px 20px;color:var(--muted);font-size:13.5px;line-height:2;
+}
+
+.qr-wrap{text-align:center;padding:6px 0}
+.qr-box{
+  display:inline-block;padding:14px;border-radius:16px;background:#fff;
+  border:1px solid var(--line);
+  box-shadow:0 4px 14px rgba(90,120,140,.08);
+}
+.qr-box canvas{display:block;width:220px;height:220px;image-rendering:pixelated}
+.qr-url{
+  font-size:11.5px;color:#6f8395;word-break:break-all;background:#f7fbfc;
+  border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:12px;
+  line-height:1.65;max-height:80px;overflow:auto;text-align:left;margin-top:14px;
+}
+.qr-warn{
+  font-size:12px;color:#a54440;background:#fdf4f3;border:1px solid #e5b3b0;
+  border-radius:10px;padding:10px 12px;line-height:1.7;text-align:left;margin-bottom:12px;
+}
+.qr-warn b{color:#8a3a36}
+.qr-tip{
+  font-size:11.5px;color:#6f8395;margin-top:12px;line-height:1.7;text-align:left;
+  background:#f4fafb;border:1px dashed #a9cfd9;border-radius:10px;padding:10px 12px;
+}
+.qr-tip b{color:#3b7c8c}
+
+.modal-mask{
+  position:fixed;inset:0;z-index:999;background:rgba(60,80,95,.28);
+  backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;
+  padding:20px;opacity:0;transition:.25s;
+}
+.modal-mask.show{opacity:1}
+.modal{
+  width:100%;max-width:400px;border-radius:20px;padding:22px;transform:scale(.94);
+  background:#fff;border:1px solid var(--line);
+  box-shadow:0 20px 50px rgba(70,100,120,.22);
+  transition:.28s cubic-bezier(.34,1.56,.64,1);
+  max-height:88vh;display:flex;flex-direction:column;
+}
+.modal-mask.show .modal{transform:scale(1)}
+.modal h3{font-size:17px;margin-bottom:14px;text-align:center;color:var(--txt-strong);flex:0 0 auto}
+.modal-body{font-size:13.5px;line-height:1.9;color:var(--txt);overflow:auto;
+  flex:1 1 auto;min-height:0}
+.modal-body b{color:#3a7f8e}
+
+.toast{
+  position:fixed;left:50%;bottom:86px;transform:translate(-50%,18px);z-index:9999;
+  padding:11px 20px;border-radius:13px;font-size:13.5px;font-weight:600;
+  background:#fff;border:1px solid var(--line);color:var(--txt-strong);
+  box-shadow:0 10px 26px rgba(90,120,140,.22);opacity:0;transition:.28s;
+  white-space:nowrap;max-width:88vw;overflow:hidden;text-overflow:ellipsis;
+}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.toast.ok{border-color:#a9d8c2;color:#22785a;background:#f4fbf7}
+.toast.warn{border-color:#f0dcbc;color:#96702f;background:#fdf9f0}
+.toast.err{border-color:#e5b3b0;color:#a54440;background:#fdf4f3}
+
+.t3-panel{
+  background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;
+  margin-bottom:12px;box-shadow:0 4px 14px rgba(90,120,140,.05);
+}
+.t3-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.t3-nail-box{
+  flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:4px;
+  padding:12px 16px;border-radius:14px;border:2px dashed #cfdde4;background:#fafcfd;
+  transition:.2s;min-width:96px;
+}
+.t3-nail-box.drop-hover{border-color:#e0a94d;background:#fdf7ea}
+.t3-nail-box .ic{font-size:26px;line-height:1}
+.t3-nail-box .lb{font-size:11px;color:var(--muted);font-weight:600}
+.t3-nail-box.done{border-style:solid;border-color:#b9e0cd;background:#f2fbf6}
+.t3-nail-box.done .lb{color:#2f8f6b}
+.t3-note{flex:1;font-size:12.5px;color:var(--muted);line-height:1.7;min-width:140px}
+
+.t3-readout{margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.t3-readout .rd{
+  padding:9px 14px;border-radius:12px;background:#f4fafb;border:1px solid #d8e6eb;
+  font-size:13px;font-weight:700;color:#3b7c8c;letter-spacing:.3px;
+}
+.t3-readout .rd.on{background:#eef8f2;border-color:#c8e6d6;color:#22785a}
+
+/* ★ 任务3 实验现象提示框 ★ */
+.t3-observe-tip{
+  margin:0 0 14px;padding:14px 16px;border-radius:14px;
+  background:#f2f8fb;border:1px solid #c5e0ea;color:#2c6a7d;
+  font-size:13px;line-height:1.9;
+}
+.t3-observe-tip .ot{font-size:13.5px;font-weight:800;color:#1f5566;margin-bottom:6px}
+.t3-observe-tip .oc{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin:3px 0}
+.t3-observe-tip .dot{
+  width:14px;height:14px;border-radius:4px;display:inline-block;flex:0 0 auto;
+  border:1px solid rgba(0,0,0,.08);vertical-align:middle;
+}
+.t3-observe-tip .arrow{color:#7fa9b8;font-weight:800;margin:0 2px}
+
+/* ★ 溶液 / 铁钉颜色变化动画 ★ */
+@keyframes t3LiquidChange {
+  0%   { fill: #3d9fe0; }
+  100% { fill: #7fcfa8; }
+}
+@keyframes t3NailChange {
+  0%   { fill: #9aa9b6; }
+  100% { fill: #c97b4a; }
+}
+.t3-liquid { animation: t3LiquidChange 2.2s ease-out forwards; }
+.t3-nail, .t3-nail-cap { animation: t3NailChange 2.2s ease-out forwards; }
+
+.rec-table{width:100%;border-collapse:separate;border-spacing:0;background:#fff;
+  border:1px solid var(--line);border-radius:16px;overflow:hidden;
+  box-shadow:0 4px 14px rgba(90,120,140,.05);margin-bottom:14px;font-size:13px;}
+.rec-table th{background:#f2f8fa;color:#3b7c8c;font-weight:700;font-size:12.5px;
+  padding:11px 12px;text-align:left;border-bottom:1px solid var(--line)}
+.rec-table td{padding:10px 12px;border-bottom:1px solid #eef2f5;vertical-align:middle;
+  color:var(--txt);line-height:1.7}
+.rec-table tr:last-child td{border-bottom:none}
+.rec-table td:first-child{width:34%;font-weight:700;color:var(--txt-strong);
+  background:#fafcfd;font-size:12.5px}
+.rec-table select{
+  width:100%;padding:9px 11px;border-radius:10px;border:1.5px solid #cfdde4;
+  background:#f8fbfc;color:var(--txt-strong);font-size:13px;font-family:inherit;
+  outline:none;transition:.18s;
+}
+.rec-table select:focus{border-color:#7cc0cf;background:#fff}
+.rec-table select.ok{border-color:#a9d8c2;background:#f2fbf6;color:#22785a;font-weight:700}
+.rec-table select.bad{border-color:#e5b3b0;background:#fdf4f3;color:#a54440}
+.rec-table .auto{color:#4a9db0;font-weight:700;font-size:12.5px}
+
+@media (max-width:380px){
+  #app{padding:0 12px 48px}
+  .hero h1{font-size:22px}
+  .task-title{font-size:14.5px}
+  .btn{padding:8px 11px;font-size:12.5px}
+  .score-chip{padding:6px 10px;font-size:12px}
+  .input-table td:first-child{width:34%}
+  .qr-box canvas{width:180px;height:180px}
+  .mon-row .k{flex:0 0 66px}
+  .mon-card-head .nm{font-size:13.5px}
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header id="topbar">
+    <button class="btn" id="btn-home">← 主页</button>
+    <div class="hud">
+      <div class="score-chip">得分 <b id="hud-score">0</b></div>
+      <button class="btn mini" id="btn-monitor">📊 监测</button>
+      <button class="btn mini" id="btn-rank">🏆 排行</button>
+      <button class="btn mini" id="btn-qr">📱 二维码</button>
+    </div>
+  </header>
+
+  <section class="screen active" id="screen-login">
+    <div class="hero">
+      <h1>质量守恒定律</h1>
+      <p class="sub">沉浸式虚拟实验室</p>
+    </div>
+    <div class="card">
+      <label>请输入你的姓名，实验进度会自动保存并同步</label>
+      <input type="text" id="input-name" maxlength="12" placeholder="例如：张三" autocomplete="off">
+      <button class="btn primary" id="btn-enter">进入实验室 →</button>
+      <p class="hint">4 个驱动型任务 · 答对 +10 分 · 答错 −10 分<br>
+        <span style="color:#2f8f6b;font-weight:700">✔ 进度自动保存，中途退出后重新输入姓名即可找回</span></p>
+      <button class="btn soft" id="btn-qr-login" style="margin-top:14px">📱 生成专属二维码（同学扫码进入）</button>
+    </div>
+  </section>
+
+  <section class="screen" id="screen-home">
+    <div class="home-head">
+      <h1>🧪 实验任务台</h1>
+      <p>4 个任务相互独立，可自由选择进入</p>
+      <div class="who" id="home-who"></div>
+    </div>
+    <div class="task-list" id="task-list"></div>
+    <button class="btn soft" id="btn-wrong">📕 错题巩固 <span id="wrong-count"></span></button>
+    <button class="btn soft" id="btn-restart">🔄 清空本次记录，重新开始</button>
+  </section>
+
+  <section class="screen" id="screen-task">
+    <div id="task-body"></div>
+    <button class="btn soft" id="btn-back-home" style="margin-top:18px">← 返回任务台</button>
+  </section>
+
+  <section class="screen" id="screen-wrong">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin:4px 0 16px">
+      <div style="font-size:17px;font-weight:800;color:var(--txt-strong)">📕 错题巩固</div>
+      <button class="btn" id="btn-wrong-back">← 返回</button>
+    </div>
+    <div id="wrong-body"></div>
+  </section>
+
+  <section class="screen" id="screen-rank">
+    <div class="rank-head">
+      <div class="t"><span class="live-dot"></span>实时排行榜</div>
+      <button class="btn" id="btn-rank-back">← 返回</button>
+    </div>
+    <div id="rank-body"></div>
+  </section>
+
+  <section class="screen" id="screen-monitor">
+    <div class="mon-head">
+      <div class="t"><span class="live-dot"></span>实时监测</div>
+      <div class="mon-toolbar">
+        <button class="btn mini" id="btn-mon-refresh">↻ 刷新</button>
+        <button class="btn mini" id="btn-mon-export">⬇ 导出</button>
+        <button class="btn mini" id="btn-mon-back">← 返回</button>
+      </div>
+    </div>
+    <div class="cloud-banner" id="mon-cloud-banner"></div>
+    <div class="mon-tabs" id="mon-tabs"></div>
+    <div class="mon-summary" id="mon-summary"></div>
+    <div id="monitor-body"></div>
+  </section>
+
+</div>
+
+<script>
+/* =========================================================
+   0. 全局配置
+   ========================================================= */
+const CONFIG = {
+  SUPABASE_URL: 'https://vowsvhmduinegpgsubrr.supabase.co',
+  SUPABASE_KEY: 'sb_publishable_HiBxqd0d-PDpv1UB4DUq3g_EMYRcjDv'
+};
+
+/* =========================================================
+   0.1 本地二维码生成器（内嵌）
+   ========================================================= */
+var QRCode = (function () {
+  function QR8bitByte(data) {
+    this.mode = 4; this.data = data; this.parsedData = [];
+    for (var i = 0, l = this.data.length; i < l; i++) {
+      var byteArray = [], code = this.data.charCodeAt(i);
+      if (code > 0x10000) {
+        byteArray[0] = 0xF0 | ((code & 0x1C0000) >>> 18);
+        byteArray[1] = 0x80 | ((code & 0x3F000) >>> 12);
+        byteArray[2] = 0x80 | ((code & 0xFC0) >>> 6);
+        byteArray[3] = 0x80 | (code & 0x3F);
+      } else if (code > 0x800) {
+        byteArray[0] = 0xE0 | ((code & 0xF000) >>> 12);
+        byteArray[1] = 0x80 | ((code & 0xFC0) >>> 6);
+        byteArray[2] = 0x80 | (code & 0x3F);
+      } else if (code > 0x80) {
+        byteArray[0] = 0xC0 | ((code & 0x7C0) >>> 6);
+        byteArray[1] = 0x80 | (code & 0x3F);
+      } else byteArray[0] = code;
+      this.parsedData.push(byteArray);
+    }
+    this.parsedData = Array.prototype.concat.apply([], this.parsedData);
+    if (this.parsedData.length != this.data.length) {
+      this.parsedData.unshift(191); this.parsedData.unshift(187); this.parsedData.unshift(239);
+    }
+  }
+  QR8bitByte.prototype = {
+    getLength: function () { return this.parsedData.length; },
+    write: function (buffer) { for (var i = 0, l = this.parsedData.length; i < l; i++) buffer.put(this.parsedData[i], 8); }
+  };
+
+  var QRMath = {
+    glog: function (n) { if (n < 1) throw new Error("glog(" + n + ")"); return QRMath.LOG_TABLE[n]; },
+    gexp: function (n) { while (n < 0) n += 255; while (n >= 256) n -= 255; return QRMath.EXP_TABLE[n]; },
+    EXP_TABLE: new Array(256), LOG_TABLE: new Array(256)
+  };
+  for (var i = 0; i < 8; i++) QRMath.EXP_TABLE[i] = 1 << i;
+  for (var i = 8; i < 256; i++) {
+    QRMath.EXP_TABLE[i] = QRMath.EXP_TABLE[i - 4] ^ QRMath.EXP_TABLE[i - 5]
+      ^ QRMath.EXP_TABLE[i - 6] ^ QRMath.EXP_TABLE[i - 8];
+  }
+  for (var i = 0; i < 255; i++) QRMath.LOG_TABLE[QRMath.EXP_TABLE[i]] = i;
+
+  function QRPolynomial(num, shift) {
+    if (num.length === undefined) throw new Error(num.length + "/" + shift);
+    var offset = 0;
+    while (offset < num.length && num[offset] === 0) offset++;
+    this.num = new Array(num.length - offset + shift);
+    for (var i = 0; i < num.length - offset; i++) this.num[i] = num[i + offset];
+  }
+  QRPolynomial.prototype = {
+    get: function (index) { return this.num[index]; },
+    getLength: function () { return this.num.length; },
+    multiply: function (e) {
+      var num = new Array(this.getLength() + e.getLength() - 1);
+      for (var i = 0; i < this.getLength(); i++)
+        for (var j = 0; j < e.getLength(); j++)
+          num[i + j] ^= QRMath.gexp(QRMath.glog(this.get(i)) + QRMath.glog(e.get(j)));
+      return new QRPolynomial(num, 0);
+    },
+    mod: function (e) {
+      if (this.getLength() - e.getLength() < 0) return this;
+      var ratio = QRMath.glog(this.get(0)) - QRMath.glog(e.get(0));
+      var num = new Array(this.getLength());
+      for (var i = 0; i < this.getLength(); i++) num[i] = this.get(i);
+      for (var i = 0; i < e.getLength(); i++) num[i] ^= QRMath.gexp(QRMath.glog(e.get(i)) + ratio);
+      return new QRPolynomial(num, 0).mod(e);
+    }
+  };
+
+  function QRRSBlock(totalCount, dataCount) { this.totalCount = totalCount; this.dataCount = dataCount; }
+  QRRSBlock.RS_BLOCK_TABLE = [
+    [1,26,19],[1,26,16],[1,26,13],[1,26,9],
+    [1,44,34],[1,44,28],[1,44,22],[1,44,16],
+    [1,70,55],[1,70,44],[2,35,17],[2,35,13],
+    [1,100,80],[2,50,32],[2,50,24],[4,25,9],
+    [1,134,108],[2,67,43],[2,33,15,2,34,16],[2,33,11,2,34,12],
+    [2,86,68],[4,43,27],[4,43,19],[4,43,15],
+    [2,98,78],[4,49,31],[2,32,14,4,33,15],[4,39,13,1,40,14],
+    [2,121,97],[2,60,38,2,61,39],[4,40,18,2,41,19],[4,40,14,2,41,15],
+    [2,146,116],[3,58,36,2,59,37],[4,36,16,4,37,17],[4,36,12,4,37,13],
+    [2,86,68,2,87,69],[4,69,43,1,70,44],[6,43,19,2,44,20],[6,43,15,2,44,16]
+  ];
+  QRRSBlock.getRSBlocks = function (typeNumber, errorCorrectLevel) {
+    var rsBlock = QRRSBlock.getRsBlockTable(typeNumber, errorCorrectLevel);
+    if (rsBlock == undefined) throw new Error("bad rs block");
+    var length = rsBlock.length / 3, list = [];
+    for (var i = 0; i < length; i++) {
+      var count = rsBlock[i * 3 + 0], totalCount = rsBlock[i * 3 + 1], dataCount = rsBlock[i * 3 + 2];
+      for (var j = 0; j < count; j++) list.push(new QRRSBlock(totalCount, dataCount));
+    }
+    return list;
+  };
+  QRRSBlock.getRsBlockTable = function (typeNumber, errorCorrectLevel) {
+    switch (errorCorrectLevel) {
+      case 1: return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 0];
+      case 0: return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 1];
+      case 3: return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 2];
+      case 2: return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 3];
+      default: return undefined;
+    }
+  };
+
+  function QRBitBuffer() { this.buffer = []; this.length = 0; }
+  QRBitBuffer.prototype = {
+    get: function (index) {
+      var bufIndex = Math.floor(index / 8);
+      return ((this.buffer[bufIndex] >>> (7 - index % 8)) & 1) == 1;
+    },
+    put: function (num, length) {
+      for (var i = 0; i < length; i++) this.putBit(((num >>> (length - i - 1)) & 1) == 1);
+    },
+    getLengthInBits: function () { return this.length; },
+    putBit: function (bit) {
+      var bufIndex = Math.floor(this.length / 8);
+      if (this.buffer.length <= bufIndex) this.buffer.push(0);
+      if (bit) this.buffer[bufIndex] |= (0x80 >>> (this.length % 8));
+      this.length++;
+    }
+  };
+
+  var QRUtil = {
+    PATTERN_POSITION_TABLE: [
+      [],[6,18],[6,22],[6,26],[6,30],[6,34],
+      [6,22,38],[6,24,42],[6,26,46],[6,28,50],[6,30,54],
+      [6,32,58],[6,34,62],[6,26,46,66],[6,26,48,70],
+      [6,26,50,74],[6,30,54,78],[6,30,56,82],[6,30,58,86],
+      [6,34,62,90],[6,28,50,72,94],[6,26,50,74,98],
+      [6,30,54,78,102],[6,28,54,80,106],[6,32,58,84,110],
+      [6,30,58,86,114],[6,34,62,90,118],[6,26,50,74,98,122],
+      [6,30,54,78,102,126],[6,26,52,78,104,130],
+      [6,30,56,82,108,134],[6,34,60,86,112,138],
+      [6,30,58,86,114,142],[6,34,62,90,118,146],
+      [6,30,54,78,102,126,150],[6,24,50,76,102,128,154],
+      [6,28,54,80,106,132,158],[6,32,58,84,110,136,162],
+      [6,26,54,82,110,138,166],[6,30,58,86,114,142,170]
+    ],
+    G15: (1<<10)|(1<<8)|(1<<5)|(1<<4)|(1<<2)|(1<<1)|(1<<0),
+    G18: (1<<12)|(1<<11)|(1<<10)|(1<<9)|(1<<8)|(1<<5)|(1<<2)|(1<<0),
+    G15_MASK: (1<<14)|(1<<12)|(1<<10)|(1<<4)|(1<<1),
+    getBCHTypeInfo: function (data) {
+      var d = data << 10;
+      while (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G15) >= 0)
+        d ^= (QRUtil.G15 << (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G15)));
+      return ((data << 10) | d) ^ QRUtil.G15_MASK;
+    },
+    getBCHTypeNumber: function (data) {
+      var d = data << 12;
+      while (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G18) >= 0)
+        d ^= (QRUtil.G18 << (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G18)));
+      return (data << 12) | d;
+    },
+    getBCHDigit: function (data) { var digit = 0; while (data != 0) { digit++; data >>>= 1; } return digit; },
+    getPatternPosition: function (typeNumber) { return QRUtil.PATTERN_POSITION_TABLE[typeNumber - 1]; },
+    getMask: function (maskPattern, i, j) {
+      switch (maskPattern) {
+        case 0: return (i + j) % 2 == 0;
+        case 1: return i % 2 == 0;
+        case 2: return j % 3 == 0;
+        case 3: return (i + j) % 3 == 0;
+        case 4: return (Math.floor(i / 2) + Math.floor(j / 3)) % 2 == 0;
+        case 5: return (i * j) % 2 + (i * j) % 3 == 0;
+        case 6: return ((i * j) % 2 + (i * j) % 3) % 2 == 0;
+        case 7: return ((i * j) % 3 + (i + j) % 2) % 2 == 0;
+        default: throw new Error("bad maskPattern:" + maskPattern);
+      }
+    },
+    getErrorCorrectPolynomial: function (errorCorrectLength) {
+      var a = new QRPolynomial([1], 0);
+      for (var i = 0; i < errorCorrectLength; i++) a = a.multiply(new QRPolynomial([1, QRMath.gexp(i)], 0));
+      return a;
+    },
+    getLengthInBits: function (mode, type) {
+      if (1 <= type && type < 10) {
+        switch (mode) { case 1: return 10; case 2: return 9; case 4: return 8; case 8: return 8; default: throw new Error("mode:" + mode); }
+      } else if (type < 27) {
+        switch (mode) { case 1: return 12; case 2: return 11; case 4: return 16; case 8: return 10; default: throw new Error("mode:" + mode); }
+      } else if (type < 41) {
+        switch (mode) { case 1: return 14; case 2: return 13; case 4: return 16; case 8: return 12; default: throw new Error("mode:" + mode); }
+      } else throw new Error("type:" + type);
+    },
+    getLostPoint: function (qrCode) {
+      var moduleCount = qrCode.getModuleCount(), lostPoint = 0;
+      for (var row = 0; row < moduleCount; row++) {
+        for (var col = 0; col < moduleCount; col++) {
+          var sameCount = 0, dark = qrCode.isDark(row, col);
+          for (var r = -1; r <= 1; r++) {
+            if (row + r < 0 || moduleCount <= row + r) continue;
+            for (var c = -1; c <= 1; c++) {
+              if (col + c < 0 || moduleCount <= col + c) continue;
+              if (r == 0 && c == 0) continue;
+              if (dark == qrCode.isDark(row + r, col + c)) sameCount++;
+            }
+          }
+          if (sameCount > 5) lostPoint += (3 + sameCount - 5);
+        }
+      }
+      for (var row = 0; row < moduleCount - 1; row++) {
+        for (var col = 0; col < moduleCount - 1; col++) {
+          var count = 0;
+          if (qrCode.isDark(row, col)) count++;
+          if (qrCode.isDark(row + 1, col)) count++;
+          if (qrCode.isDark(row, col + 1)) count++;
+          if (qrCode.isDark(row + 1, col + 1)) count++;
+          if (count == 0 || count == 4) lostPoint += 3;
+        }
+      }
+      for (var row = 0; row < moduleCount; row++) {
+        for (var col = 0; col < moduleCount - 6; col++) {
+          if (qrCode.isDark(row, col) && !qrCode.isDark(row, col+1)
+            && qrCode.isDark(row, col+2) && qrCode.isDark(row, col+3)
+            && qrCode.isDark(row, col+4) && !qrCode.isDark(row, col+5)
+            && qrCode.isDark(row, col+6)) lostPoint += 40;
+        }
+      }
+      for (var col = 0; col < moduleCount; col++) {
+        for (var row = 0; row < moduleCount - 6; row++) {
+          if (qrCode.isDark(row, col) && !qrCode.isDark(row+1, col)
+            && qrCode.isDark(row+2, col) && qrCode.isDark(row+3, col)
+            && qrCode.isDark(row+4, col) && !qrCode.isDark(row+5, col)
+            && qrCode.isDark(row+6, col)) lostPoint += 40;
+        }
+      }
+      var darkCount = 0;
+      for (var col = 0; col < moduleCount; col++)
+        for (var row = 0; row < moduleCount; row++)
+          if (qrCode.isDark(row, col)) darkCount++;
+      var ratio = Math.abs(100 * darkCount / moduleCount / moduleCount - 50) / 5;
+      lostPoint += ratio * 10;
+      return lostPoint;
+    }
+  };
+
+  function QRCode(typeNumber, errorCorrectLevel) {
+    this.typeNumber = typeNumber; this.errorCorrectLevel = errorCorrectLevel;
+    this.modules = null; this.moduleCount = 0; this.dataCache = null; this.dataList = [];
+  }
+  QRCode.prototype = {
+    addData: function (data) { var n = new QR8bitByte(data); this.dataList.push(n); this.dataCache = null; },
+    isDark: function (row, col) {
+      if (row < 0 || this.moduleCount <= row || col < 0 || this.moduleCount <= col) throw new Error(row + "," + col);
+      return this.modules[row][col];
+    },
+    getModuleCount: function () { return this.moduleCount; },
+    make: function () { this.makeImpl(false, this.getBestMaskPattern()); },
+    makeImpl: function (test, maskPattern) {
+      this.moduleCount = this.typeNumber * 4 + 17;
+      this.modules = new Array(this.moduleCount);
+      for (var row = 0; row < this.moduleCount; row++) {
+        this.modules[row] = new Array(this.moduleCount);
+        for (var col = 0; col < this.moduleCount; col++) this.modules[row][col] = null;
+      }
+      this.setupPositionProbePattern(0, 0);
+      this.setupPositionProbePattern(this.moduleCount - 7, 0);
+      this.setupPositionProbePattern(0, this.moduleCount - 7);
+      this.setupPositionAdjustPattern();
+      this.setupTimingPattern();
+      this.setupTypeInfo(test, maskPattern);
+      if (this.typeNumber >= 7) this.setupTypeNumber(test);
+      if (this.dataCache == null) this.dataCache = QRCode.createData(this.typeNumber, this.errorCorrectLevel, this.dataList);
+      this.mapData(this.dataCache, maskPattern);
+    },
+    setupPositionProbePattern: function (row, col) {
+      for (var r = -1; r <= 7; r++) {
+        if (row + r <= -1 || this.moduleCount <= row + r) continue;
+        for (var c = -1; c <= 7; c++) {
+          if (col + c <= -1 || this.moduleCount <= col + c) continue;
+          if ((0 <= r && r <= 6 && (c == 0 || c == 6))
+            || (0 <= c && c <= 6 && (r == 0 || r == 6))
+            || (2 <= r && r <= 4 && 2 <= c && c <= 4)) this.modules[row + r][col + c] = true;
+          else this.modules[row + r][col + c] = false;
+        }
+      }
+    },
+    getBestMaskPattern: function () {
+      var minLostPoint = 0, pattern = 0;
+      for (var i = 0; i < 8; i++) {
+        this.makeImpl(true, i);
+        var lostPoint = QRUtil.getLostPoint(this);
+        if (i == 0 || minLostPoint > lostPoint) { minLostPoint = lostPoint; pattern = i; }
+      }
+      return pattern;
+    },
+    setupTimingPattern: function () {
+      for (var r = 8; r < this.moduleCount - 8; r++) {
+        if (this.modules[r][6] != null) continue;
+        this.modules[r][6] = (r % 2 == 0);
+      }
+      for (var c = 8; c < this.moduleCount - 8; c++) {
+        if (this.modules[6][c] != null) continue;
+        this.modules[6][c] = (c % 2 == 0);
+      }
+    },
+    setupPositionAdjustPattern: function () {
+      var pos = QRUtil.getPatternPosition(this.typeNumber);
+      for (var i = 0; i < pos.length; i++) {
+        for (var j = 0; j < pos.length; j++) {
+          var row = pos[i], col = pos[j];
+          if (this.modules[row][col] != null) continue;
+          for (var r = -2; r <= 2; r++) {
+            for (var c = -2; c <= 2; c++) {
+              if (r == -2 || r == 2 || c == -2 || c == 2 || (r == 0 && c == 0)) this.modules[row + r][col + c] = true;
+              else this.modules[row + r][col + c] = false;
+            }
+          }
+        }
+      }
+    },
+    setupTypeNumber: function (test) {
+      var bits = QRUtil.getBCHTypeNumber(this.typeNumber);
+      for (var i = 0; i < 18; i++) {
+        var mod = (!test && ((bits >> i) & 1) == 1);
+        this.modules[Math.floor(i / 3)][i % 3 + this.moduleCount - 8 - 3] = mod;
+      }
+      for (var i = 0; i < 18; i++) {
+        var mod = (!test && ((bits >> i) & 1) == 1);
+        this.modules[i % 3 + this.moduleCount - 8 - 3][Math.floor(i / 3)] = mod;
+      }
+    },
+    setupTypeInfo: function (test, maskPattern) {
+      var data = (this.errorCorrectLevel << 3) | maskPattern;
+      var bits = QRUtil.getBCHTypeInfo(data);
+      for (var i = 0; i < 15; i++) {
+        var mod = (!test && ((bits >> i) & 1) == 1);
+        if (i < 6) this.modules[i][8] = mod;
+        else if (i < 8) this.modules[i + 1][8] = mod;
+        else this.modules[this.moduleCount - 15 + i][8] = mod;
+      }
+      for (var i = 0; i < 15; i++) {
+        var mod = (!test && ((bits >> i) & 1) == 1);
+        if (i < 8) this.modules[8][this.moduleCount - i - 1] = mod;
+        else if (i < 9) this.modules[8][15 - i - 1 + 1] = mod;
+        else this.modules[8][15 - i - 1] = mod;
+      }
+      this.modules[this.moduleCount - 8][8] = (!test);
+    },
+    mapData: function (data, maskPattern) {
+      var inc = -1, row = this.moduleCount - 1, bitIndex = 7, byteIndex = 0;
+      for (var col = this.moduleCount - 1; col > 0; col -= 2) {
+        if (col == 6) col--;
+        while (true) {
+          for (var c = 0; c < 2; c++) {
+            if (this.modules[row][col - c] == null) {
+              var dark = false;
+              if (byteIndex < data.length) dark = (((data[byteIndex] >>> bitIndex) & 1) == 1);
+              var mask = QRUtil.getMask(maskPattern, row, col - c);
+              if (mask) dark = !dark;
+              this.modules[row][col - c] = dark;
+              bitIndex--;
+              if (bitIndex == -1) { byteIndex++; bitIndex = 7; }
+            }
+          }
+          row += inc;
+          if (row < 0 || this.moduleCount <= row) { row -= inc; inc = -inc; break; }
+        }
+      }
+    }
+  };
+
+  QRCode.PAD0 = 0xEC; QRCode.PAD1 = 0x11;
+  QRCode.createData = function (typeNumber, errorCorrectLevel, dataList) {
+    var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, errorCorrectLevel);
+    var buffer = new QRBitBuffer();
+    for (var i = 0; i < dataList.length; i++) {
+      var data = dataList[i];
+      buffer.put(data.mode, 4);
+      buffer.put(data.getLength(), QRUtil.getLengthInBits(data.mode, typeNumber));
+      data.write(buffer);
+    }
+    var totalDataCount = 0;
+    for (var i = 0; i < rsBlocks.length; i++) totalDataCount += rsBlocks[i].dataCount;
+    if (buffer.getLengthInBits() > totalDataCount * 8)
+      throw new Error("code length overflow. (" + buffer.getLengthInBits() + ">" + totalDataCount * 8 + ")");
+    if (buffer.getLengthInBits() + 4 <= totalDataCount * 8) buffer.put(0, 4);
+    while (buffer.getLengthInBits() % 8 != 0) buffer.putBit(false);
+    while (true) {
+      if (buffer.getLengthInBits() >= totalDataCount * 8) break;
+      buffer.put(QRCode.PAD0, 8);
+      if (buffer.getLengthInBits() >= totalDataCount * 8) break;
+      buffer.put(QRCode.PAD1, 8);
+    }
+    return QRCode.createBytes(buffer, rsBlocks);
+  };
+  QRCode.createBytes = function (buffer, rsBlocks) {
+    var offset = 0, maxDcCount = 0, maxEcCount = 0;
+    var dcdata = new Array(rsBlocks.length), ecdata = new Array(rsBlocks.length);
+    for (var r = 0; r < rsBlocks.length; r++) {
+      var dcCount = rsBlocks[r].dataCount, ecCount = rsBlocks[r].totalCount - dcCount;
+      maxDcCount = Math.max(maxDcCount, dcCount);
+      maxEcCount = Math.max(maxEcCount, ecCount);
+      dcdata[r] = new Array(dcCount);
+      for (var i = 0; i < dcdata[r].length; i++) dcdata[r][i] = 0xff & buffer.buffer[i + offset];
+      offset += dcCount;
+      var rsPoly = QRUtil.getErrorCorrectPolynomial(ecCount);
+      var rawPoly = new QRPolynomial(dcdata[r], rsPoly.getLength() - 1);
+      var modPoly = rawPoly.mod(rsPoly);
+      ecdata[r] = new Array(rsPoly.getLength() - 1);
+      for (var i = 0; i < ecdata[r].length; i++) {
+        var modIndex = i + modPoly.getLength() - ecdata[r].length;
+        ecdata[r][i] = (modIndex >= 0) ? modPoly.get(modIndex) : 0;
+      }
+    }
+    var totalCodeCount = 0;
+    for (var i = 0; i < rsBlocks.length; i++) totalCodeCount += rsBlocks[i].totalCount;
+    var data = new Array(totalCodeCount), index = 0;
+    for (var i = 0; i < maxDcCount; i++)
+      for (var r = 0; r < rsBlocks.length; r++)
+        if (i < dcdata[r].length) data[index++] = dcdata[r][i];
+    for (var i = 0; i < maxEcCount; i++)
+      for (var r = 0; r < rsBlocks.length; r++)
+        if (i < ecdata[r].length) data[index++] = ecdata[r][i];
+    return data;
+  };
+  QRCode.ErrorCorrectLevel = { L: 1, M: 0, Q: 3, H: 2 };
+
+  function getTypeNumber(text) {
+    var byteLen = new QR8bitByte(text).getLength();
+    var cap = [0,17,32,53,78,106,134,154,192,230,271,321,367,425,458,520,586,644,718,792,858,929,1003,1091,1171,1273,1367,1465,1528,1628,1732,1840,1952,2068,2188,2303,2431,2563,2699,2809,2953];
+    for (var v = 1; v <= 40; v++) if (cap[v] >= byteLen) return v;
+    return 40;
+  }
+
+  function render(text, canvas, size) {
+    size = size || 220;
+    var typeNumber = getTypeNumber(text);
+    var qr = new QRCode(typeNumber, QRCode.ErrorCorrectLevel.L);
+    qr.addData(text); qr.make();
+    var count = qr.getModuleCount();
+    var dpr = window.devicePixelRatio || 1;
+    var cell = size / count;
+    var pad = Math.max(2, Math.floor(cell * 0.8));
+    canvas.width = (size + pad * 2) * dpr;
+    canvas.height = (size + pad * 2) * dpr;
+    canvas.style.width = (size + pad * 2) + 'px';
+    canvas.style.height = (size + pad * 2) + 'px';
+    var ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, size + pad * 2, size + pad * 2);
+    ctx.fillStyle = '#1e2b36';
+    for (var r = 0; r < count; r++)
+      for (var c = 0; c < count; c++)
+        if (qr.isDark(r, c)) {
+          var x = pad + c * cell, y = pad + r * cell;
+          ctx.fillRect(Math.floor(x), Math.floor(y), Math.ceil(cell), Math.ceil(cell));
+        }
+  }
+  return { render: render };
+})();
+
+/* =========================================================
+   1. 常量与题库
+   ========================================================= */
+const SCORE_RIGHT = 10;
+const SCORE_WRONG = 10;
+const SCORE_RETRY = 10;
+
+const TASKS = [
+  { id:1, icon:'💬', title:'历史辩论', sub:'如果你是拉瓦锡',
+    desc:'反驳波义耳的观点，理解验证质量守恒的前提。' },
+  { id:3, icon:'🧪', title:'大胆实验', sub:'铁与硫酸铜反应',
+    desc:'设计并完成实验，测定反应前后总质量。' },
+  { id:6, icon:'⚖️', title:'AI 模拟实验', sub:'碳酸钠与稀盐酸',
+    desc:'对比敞口与密闭装置，反证质量守恒定律。' },
+  { id:7, icon:'🔑', title:'归纳提炼', sub:'验证质量守恒的条件',
+    desc:'总结验证质量守恒定律的必要条件。' }
+];
+
+const T1_S1 = [
+  { v:'a', t:'参加反应的氧气（气体）' },
+  { v:'b', t:'生成的固体' },
+  { v:'c', t:'容器本身的质量' }
+];
+const T1_S1_ANS = 'a';
+const T1_S2 = [{ v:'a', t:'密闭' }, { v:'b', t:'敞口' }];
+const T1_S2_ANS = 'b';
+
+const T6_TABLE = [
+  { key:'t6-phen', label:'实验现象', ans:0,
+    opts:['产生大量气泡，白色粉末逐渐溶解','溶液变成蓝色，无气泡','没有明显现象'],
+    hint:'现象提示：碳酸钠与稀盐酸反应生成 CO₂，因此能看到大量气泡冒出，白色粉末逐渐溶解。' },
+  { key:'t6-change', label:'天平示数变化', ans:0,
+    opts:['示数减小，天平指针向右偏','示数增大，天平指针向左偏','示数不变，天平保持平衡'],
+    hint:'现象提示：生成的 CO₂ 逸散到空气中，左盘变轻，天平指针向右偏转，示数减小。' },
+  { key:'t6-reason', label:'示数变化原因', ans:0,
+    opts:['生成的 CO₂ 气体逸散到空气中','药品洒落到了桌面上','天平本身没有调平'],
+    hint:'提示：质量“变小”是因为生成的 CO₂ 气体没有被称量到，并非反应不守恒。' },
+  { key:'t6-verify', label:'能否直接验证质量守恒', ans:1,
+    opts:['能，天平示数变化说明不守恒','不能，敞口装置漏掉了气体'],
+    hint:'提示：敞口装置无法把所有产物一起称量，因此不能直接验证该反应的质量守恒。' },
+  { key:'t6-improve', label:'改进方案', ans:0,
+    opts:['改用密闭装置（如锥形瓶 + 气球）','增加药品用量','换一台更精密的天平'],
+    hint:'提示：凡有气体生成的反应，验证质量守恒必须使用密闭装置，把气体也一起称量。' }
+];
+
+const T7_A = [{ v:'a', t:'化学变化' }, { v:'b', t:'物理变化' }, { v:'c', t:'任何变化' }];
+const T7_A_ANS = 'a';
+const T7_B = [{ v:'a', t:'使用密闭装置' }, { v:'b', t:'使用敞口容器' }, { v:'c', t:'换用更大的容器' }];
+const T7_B_ANS = 'a';
+
+/* =========================================================
+   2. 状态
+   ========================================================= */
+const KEY = 'chem_lab_v4_';
+const RANK_KEY = 'chem_lab_v4_rank';
+const ALL_KEY = 'chem_lab_v4_all';
+
+let S = null;
+let currentTask = 1;
+let monitorTimer = null;
+let monTask = 1;
+let inputTimer = null;
+
+function blankState(name){
+  return {
+    name: name, score: 0, awarded: {}, ans: {}, opErrors: [],
+    t1: { v1:'', v2:'', v3:'', v4:'', s1:'', s2:'' },
+    t3: { polished:false, balance:false, flask:false, solution:false,
+          tube:false, stopper:false, m1:null, reacted:false, m2:null,
+          phen:'', concl:'' },
+    t6: { stage:'setup1',
+          l1:{ balance:false, beaker:false, powder:false, tube:false },
+          l2:{ flask:false, powder:false, tube:false, balloon:false },
+          done:false },
+    t7: { a:'', b:'' },
+    ts: 0
+  };
+}
+
+function normalizeState(o, name){
+  const base = blankState(name);
+  const m = Object.assign(base, o || {});
+  m.name = name;
+  m.t1 = Object.assign(base.t1, (o && o.t1) || {});
+  m.t3 = Object.assign(base.t3, (o && o.t3) || {});
+  m.t6 = Object.assign(base.t6, (o && o.t6) || {});
+  m.t6.l1 = Object.assign(base.t6.l1, (o && o.t6 && o.t6.l1) || {});
+  m.t6.l2 = Object.assign(base.t6.l2, (o && o.t6 && o.t6.l2) || {});
+  m.t7 = Object.assign(base.t7, (o && o.t7) || {});
+  m.ans = (o && o.ans) || {};
+  m.awarded = (o && o.awarded) || {};
+  m.opErrors = (o && o.opErrors) || [];
+  m.ts = (o && o.ts) || 0;
+  return m;
+}
+
+function hasContent(st){
+  if(!st) return false;
+  if((st.score || 0) !== 0) return true;
+  if(Object.keys(st.ans || {}).length) return true;
+  const t1 = st.t1 || {}, t3 = st.t3 || {}, t7 = st.t7 || {};
+  if(t1.v1 || t1.v2 || t1.v3 || t1.v4 || t1.s1 || t1.s2) return true;
+  if(t3.phen || t3.concl || t3.polished || t3.m1 !== null) return true;
+  if(t7.a || t7.b) return true;
+  if(st.t6){
+    const l1 = st.t6.l1 || {}, l2 = st.t6.l2 || {};
+    if(l1.balance || l1.beaker || l2.flask || l2.balloon) return true;
+  }
+  return false;
+}
+
+function save(){
+  if(!S) return;
+  S.ts = Date.now();
+  localStorage.setItem(KEY + S.name, JSON.stringify(S));
+  const rank = JSON.parse(localStorage.getItem(RANK_KEY) || '{}');
+  rank[S.name] = { name: S.name, score: S.score, tasks: TASKS.filter(t => isTaskDone(t.id)).length, ts: S.ts };
+  localStorage.setItem(RANK_KEY, JSON.stringify(rank));
+  const all = JSON.parse(localStorage.getItem(ALL_KEY) || '{}');
+  all[S.name] = JSON.parse(JSON.stringify(S));
+  localStorage.setItem(ALL_KEY, JSON.stringify(all));
+  cloudSync(S);
+  updateHUD();
+}
+
+function scheduleSave(){
+  clearTimeout(inputTimer);
+  inputTimer = setTimeout(() => { if(S) save(); }, 500);
+}
+
+function load(name){
+  const raw = localStorage.getItem(KEY + name);
+  if(raw){ try{ return normalizeState(JSON.parse(raw), name); }catch(e){} }
+  return blankState(name);
+}
+
+/* =========================================================
+   3. 云端同步
+   ========================================================= */
+function cloudEnabled(){
+  return !!(CONFIG.SUPABASE_URL && CONFIG.SUPABASE_URL.indexOf('YOUR-PROJECT') === -1 && CONFIG.SUPABASE_KEY);
+}
+function cloudHeaders(){
+  return { 'apikey': CONFIG.SUPABASE_KEY, 'Authorization': 'Bearer ' + CONFIG.SUPABASE_KEY, 'Content-Type': 'application/json' };
+}
+async function cloudSync(state){
+  if(!cloudEnabled()) return;
+  try{
+    await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/students?on_conflict=name`, {
+      method:'POST',
+      headers: Object.assign(cloudHeaders(), { 'Prefer':'resolution=merge-duplicates,return=minimal' }),
+      body: JSON.stringify({ name: state.name, score: state.score, data: state, updated_at: new Date().toISOString() })
+    });
+  }catch(e){ console.warn('cloud sync failed', e); }
+}
+async function cloudFetchAll(){
+  if(!cloudEnabled()) return null;
+  try{
+    const r = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/students?select=name,score,data,updated_at&limit=500`, { headers: cloudHeaders() });
+    if(!r.ok) return { error: r.status };
+    return await r.json();
+  }catch(e){ return { error: 'network' }; }
+}
+async function cloudFetchOne(name){
+  if(!cloudEnabled()) return null;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 3500);
+  try{
+    const r = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/students?name=eq.${encodeURIComponent(name)}&select=name,score,data,updated_at`, { headers: cloudHeaders(), signal: controller.signal });
+    if(!r.ok) return null;
+    const arr = await r.json();
+    return (arr && arr.length) ? arr[0] : null;
+  }catch(e){ return null; }
+  finally{ clearTimeout(timer); }
+}
+
+/* =========================================================
+   4. 工具
+   ========================================================= */
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+
+function esc(s){
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+function show(id){
+  $$('.screen').forEach(s => s.classList.toggle('active', s.id === id));
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+function toast(msg, type='info'){
+  const t = document.createElement('div');
+  t.className = 'toast ' + type;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  requestAnimationFrame(()=> t.classList.add('show'));
+  setTimeout(()=>{ t.classList.remove('show'); setTimeout(()=> t.remove(), 320); }, 1700);
+}
+function showModal(title, html, onOk, okText='知道了'){
+  const mask = document.createElement('div');
+  mask.className = 'modal-mask';
+  mask.innerHTML = `<div class="modal"><h3>${title}</h3><div class="modal-body">${html}</div><button class="btn primary">${okText}</button></div>`;
+  document.body.appendChild(mask);
+  requestAnimationFrame(()=> mask.classList.add('show'));
+  mask.querySelector('button').onclick = () => { mask.classList.remove('show'); setTimeout(()=> mask.remove(), 260); onOk && onOk(); };
+}
+function updateHUD(){
+  if(!S) return;
+  const s = $('#hud-score'); if(s) s.textContent = S.score;
+  const wc = $('#wrong-count');
+  if(wc){ const n = wrongKeys().length; wc.textContent = n > 0 ? `(${n})` : ''; }
+}
+function award(key, delta, msg){
+  if(!S.awarded[key]){ S.awarded[key] = true; S.score += delta; save(); if(msg) toast(msg, delta > 0 ? 'ok' : 'err'); }
+}
+function wrongKeys(){
+  return Object.keys(S.ans).filter(k => S.ans[k] && !S.ans[k].correct).filter(k => !(S.ans[k].retried));
+}
+
+/* =========================================================
+   5. 任务完成判定
+   ========================================================= */
+function isTaskDone(id){
+  if(!S) return false;
+  if(id === 1) return !!(S.t1.v1.trim() && S.t1.v2.trim() && S.t1.v3.trim() && S.t1.v4.trim() && S.t1.s1 === T1_S1_ANS && S.t1.s2 === T1_S2_ANS);
+  if(id === 3) return !!(S.t3.m2 !== null && S.t3.phen.trim() && S.t3.concl.trim());
+  if(id === 6) return !!S.t6.done;
+  if(id === 7) return S.t7.a === T7_A_ANS && S.t7.b === T7_B_ANS;
+  return false;
+}
+function isTaskDoneState(st, id){
+  if(!st) return false;
+  if(id === 1){ const t = st.t1 || {}; return !!(t.v1 && t.v2 && t.v3 && t.v4 && t.s1 === T1_S1_ANS && t.s2 === T1_S2_ANS); }
+  if(id === 3){ const t = st.t3 || {}; return !!(t.m2 !== null && t.phen && t.concl); }
+  if(id === 6) return !!(st.t6 && st.t6.done);
+  if(id === 7){ const t = st.t7 || {}; return t.a === T7_A_ANS && t.b === T7_B_ANS; }
+  return false;
+}
+
+/* =========================================================
+   6. 拖拽引擎
+   ========================================================= */
+const Drag = {
+  active:null, ghost:null, offX:0, offY:0, w:0, h:0, selected:null,
+  init(){
+    document.addEventListener('pointerdown', e => this.onDown(e), { passive:false });
+    document.addEventListener('pointermove', e => this.onMove(e), { passive:false });
+    document.addEventListener('pointerup',   e => this.onUp(e));
+    document.addEventListener('pointercancel', e => this.onUp(e));
+  },
+  onDown(e){
+    const el = e.target.closest('[data-drag]'); if(!el) return;
+    e.preventDefault();
+    const r = el.getBoundingClientRect();
+    this.active = { el, sx:e.clientX, sy:e.clientY, moved:false };
+    this.offX = e.clientX - r.left; this.offY = e.clientY - r.top;
+    this.w = r.width; this.h = r.height;
+  },
+  onMove(e){
+    const a = this.active; if(!a) return;
+    e.preventDefault();
+    const dx = e.clientX - a.sx, dy = e.clientY - a.sy;
+    if(!a.moved && Math.hypot(dx, dy) < 7) return;
+    if(!a.moved){
+      a.moved = true;
+      const g = a.el.cloneNode(true);
+      g.className = 'drag-ghost';
+      g.style.width = this.w + 'px'; g.style.height = this.h + 'px';
+      document.body.appendChild(g); this.ghost = g; a.el.classList.add('dragging');
+    }
+    this.ghost.style.left = (e.clientX - this.offX) + 'px';
+    this.ghost.style.top  = (e.clientY - this.offY) + 'px';
+    this.hover(e.clientX, e.clientY);
+  },
+  onUp(e){
+    const a = this.active; if(!a) return;
+    this.active = null;
+    if(!a.moved){ this.select(a.el); return; }
+    if(this.ghost){ this.ghost.remove(); this.ghost = null; }
+    a.el.classList.remove('dragging');
+    $$('.drop-hover').forEach(n => n.classList.remove('drop-hover'));
+    const zone = this.zoneAt(e.clientX, e.clientY);
+    if(zone) zone.dispatchEvent(new CustomEvent('dropitem', { detail:{ item:a.el.dataset.drag }, bubbles:true }));
+    else toast('没有放到正确的位置哦～', 'warn');
+  },
+  zoneAt(x, y){ const el = document.elementFromPoint(x, y); return el ? el.closest('[data-drop]') : null; },
+  hover(x, y){ $$('.drop-hover').forEach(n => n.classList.remove('drop-hover')); const z = this.zoneAt(x, y); if(z) z.classList.add('drop-hover'); },
+  select(el){
+    if(this.selected === el){ el.classList.remove('selected'); this.selected = null; return; }
+    if(this.selected) this.selected.classList.remove('selected');
+    this.selected = el; el.classList.add('selected');
+    toast('已选中，点击目标位置放下', 'info');
+  },
+  clear(){ if(this.selected){ this.selected.classList.remove('selected'); this.selected = null; } }
+};
+
+document.addEventListener('click', e => {
+  const zone = e.target.closest('[data-drop]');
+  if(zone && Drag.selected){
+    zone.dispatchEvent(new CustomEvent('dropitem', { detail:{ item: Drag.selected.dataset.drag }, bubbles:true }));
+    Drag.clear();
+  }
+});
+
+/* =========================================================
+   7. 登录（含云端找回）
+   ========================================================= */
+$('#btn-enter').onclick = async () => {
+  const name = $('#input-name').value.trim();
+  if(!name){ toast('请先输入姓名', 'warn'); return; }
+  if(name.length > 12){ toast('姓名太长了', 'warn'); return; }
+
+  const btn = $('#btn-enter');
+  const origText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '正在找回进度…';
+
+  let restored = false, restoredFrom = '';
+  try{
+    let localS = load(name);
+    if(cloudEnabled()){
+      const cloudRec = await cloudFetchOne(name);
+      if(cloudRec && cloudRec.data){
+        const cloudS = normalizeState(cloudRec.data, name);
+        const cloudTs = cloudS.ts || (cloudRec.updated_at ? Date.parse(cloudRec.updated_at) : 0) || 0;
+        const localTs = localS.ts || 0;
+        if(cloudTs > localTs){ localS = cloudS; restored = true; restoredFrom = '云端'; }
+      }
+    }
+    if(!restored && hasContent(localS)){ restored = true; restoredFrom = '本地'; }
+    S = normalizeState(localS, name);
+    save();
+    $('#topbar').classList.add('on');
+    updateHUD();
+    renderHome();
+    show('screen-home');
+    if(restored) toast('已找回 ' + name + ' 之前的记录（' + restoredFrom + '）✔', 'ok');
+  }finally{
+    btn.disabled = false;
+    btn.textContent = origText;
+  }
+};
+
+$('#input-name').addEventListener('keydown', e => { if(e.key === 'Enter') $('#btn-enter').click(); });
+$('#btn-home').onclick = () => { renderHome(); show('screen-home'); };
+$('#btn-back-home').onclick = () => { renderHome(); show('screen-home'); };
+
+function renderHome(){
+  if(!S) return;
+  $('#home-who').textContent = `👤 ${S.name}`;
+  updateHUD();
+  const list = $('#task-list');
+  list.innerHTML = TASKS.map(t => {
+    const done = isTaskDone(t.id);
+    return `<div class="task-card ${done ? 'done' : ''}" data-task="${t.id}">
+        <div class="task-icon">${t.icon}</div>
+        <div class="task-main">
+          <div class="task-name">任务 ${t.id}</div>
+          <div class="task-title">${t.title} · ${t.sub}</div>
+          <div class="task-desc">${t.desc}</div>
+        </div>
+        <div class="task-status ${done ? 'ok' : ''}">${done ? '已完成' : '未开始'}</div>
+      </div>`;
+  }).join('');
+  list.querySelectorAll('.task-card').forEach(c => { c.onclick = () => openTask(+c.dataset.task); });
+}
+
+function openTask(id){
+  currentTask = id;
+  Drag.clear();
+  renderTask(id);
+  show('screen-task');
+}
+
+/* =========================================================
+   8. 任务渲染分发
+   ========================================================= */
+function renderTask(id){
+  const body = $('#task-body');
+  if(id === 1) body.innerHTML = task1HTML();
+  else if(id === 3) body.innerHTML = task3HTML();
+  else if(id === 6) body.innerHTML = task6HTML();
+  else if(id === 7) body.innerHTML = task7HTML();
+  updateHUD();
+}
+
+/* =========================================================
+   9. 任务 1
+   ========================================================= */
+function task1HTML(){
+  const t = S.t1;
+  const done = isTaskDone(1);
+  const sel1 = `<select data-sel="t1-s1" class="${t.s1 ? (t.s1 === T1_S1_ANS ? 'ok' : 'bad') : ''}">
+      <option value="">请选择</option>
+      ${T1_S1.map(o => `<option value="${o.v}" ${t.s1 === o.v ? 'selected' : ''}>${o.t}</option>`).join('')}
+    </select>`;
+  const sel2 = `<select data-sel="t1-s2" class="${t.s2 ? (t.s2 === T1_S2_ANS ? 'ok' : 'bad') : ''}">
+      <option value="">请选择</option>
+      ${T1_S2.map(o => `<option value="${o.v}" ${t.s2 === o.v ? 'selected' : ''}>${o.t}</option>`).join('')}
+    </select>`;
+  return `
+    <div class="task-head">
+      <span class="task-badge">任务 1</span>
+      <h2>历史辩论 · 如果你是拉瓦锡</h2>
+    </div>
+    <div class="story">
+      <p>17 世纪，<b>波义耳</b>把金属放在<b>敞口容器</b>中加热，发现金属的质量增加了。他由此认为，是“火粒子”穿过容器进入了金属。</p>
+      <p>后来，<b>拉瓦锡</b>用<b>密闭容器</b>重复了类似的实验，发现反应前后总质量并没有改变——金属质量增加，是因为它和空气中的氧气结合了。</p>
+      <p>现在，请你站在拉瓦锡的立场，从下面四个角度反驳波义耳的观点。</p>
+    </div>
+    <table class="input-table">
+      <thead><tr><th>反驳角度</th><th>我的观点</th></tr></thead>
+      <tbody>
+        <tr><td>装置问题</td><td><textarea data-t1="v1" placeholder="他的容器是敞口的，会带来什么问题？">${esc(t.v1)}</textarea></td></tr>
+        <tr><td>称量对象问题</td><td><textarea data-t1="v2" placeholder="他漏称了什么？">${esc(t.v2)}</textarea></td></tr>
+        <tr><td>证据问题</td><td><textarea data-t1="v3" placeholder="要证明质量守恒，证据应满足什么要求？">${esc(t.v3)}</textarea></td></tr>
+        <tr><td>改进建议</td><td><textarea data-t1="v4" placeholder="你会怎样改进这个实验？">${esc(t.v4)}</textarea></td></tr>
+      </tbody>
+    </table>
+    <div class="fill-block">
+      <div class="fill-title">小结</div>
+      <p>波义耳实验未称量 ${sel1}，装置 ${sel2}，因此结论不可靠。</p>
+    </div>
+    ${done ? `<div class="result-note">✅ 任务 1 已完成。你从装置、称量对象、证据、改进建议四个角度，完整反驳了波义耳的观点。</div>`
+      : `<div class="hint" style="text-align:left;padding:0 4px">提示：四个观点都填写后，再完成下方小结的两个选择，任务即可完成。</div>`}
+  `;
+}
+
+/* =========================================================
+   10. 任务 3（★ 修复：未反应前溶液始终是蓝色 ★）
+   ========================================================= */
+function task3HTML(){
+  const t = S.t3;
+  const done = isTaskDone(3);
+
+  const nailBox = `
+    <div class="t3-nail-box ${t.polished ? 'done' : ''}" data-drop="nail">
+      <div class="ic">🔩</div>
+      <div class="lb">${t.polished ? '已打磨铁钉 ✔' : '待打磨铁钉'}</div>
+    </div>`;
+  const polishNote = t.polished
+    ? '铁钉表面的氧化膜已经除去，可以开始组装装置了。'
+    : '把【砂纸】拖到铁钉上打磨，除去表面的氧化膜。';
+
+  let bench;
+  if(!t.balance){
+    bench = `<div class="drop-zone" data-drop="bench">
+        <span class="dz-icon">⚖️</span>
+        <span>把【托盘天平】拖到这里</span>
+      </div>`;
+  }else{
+    let flaskInner = t.flask ? flask3SVG(t) : '<div class="pan-hint">放锥形瓶</div>';
+    bench = `
+      <div class="scale">
+        <div class="scale-arm" style="transform:rotate(0deg)">
+          <div class="pan left" data-drop="pan">
+            ${flaskInner}
+            <div class="pan-plate"></div>
+          </div>
+          <div class="pan right">
+            <div class="weight">砝码</div>
+            <div class="pan-plate"></div>
+          </div>
+        </div>
+        <div class="scale-column"></div>
+        <div class="scale-base"></div>
+      </div>`;
+  }
+
+  const tray = [];
+  if(!t.balance)  tray.push({ k:'balance',  icon:'⚖️', label:'托盘天平' });
+  if(!t.polished) tray.push({ k:'paper',    icon:'📄', label:'砂纸' });
+  if(!t.flask)    tray.push({ k:'flask',    icon:'🧴', label:'锥形瓶' });
+  if(!t.solution) tray.push({ k:'solution', icon:'💧', label:'硫酸铜溶液' });
+  if(!t.tube)     tray.push({ k:'tube',     icon:'🧫', label:'小试管（含铁钉）' });
+  if(!t.stopper)  tray.push({ k:'stopper',  icon:'⚫', label:'橡胶塞' });
+
+  const trayHTML = tray.length
+    ? `<div class="tray">${tray.map(x => `
+        <div class="tile" data-drag="${x.k}">
+          <div class="ti">${x.icon}</div><span>${x.label}</span>
+        </div>`).join('')}</div>`
+    : `<div class="tray" style="grid-template-columns:1fr">
+        <div style="text-align:center;color:#93a6b4;font-size:12.5px;padding:10px">装置已组装完成 ✔</div>
+      </div>`;
+
+  let readout = '';
+  if(t.m1 !== null || t.m2 !== null){
+    readout = `<div class="t3-readout">
+        ${t.m1 !== null ? `<div class="rd on">反应前 m₁ = ${t.m1} g</div>` : ''}
+        ${t.m2 !== null ? `<div class="rd on">反应后 m₂ = ${t.m2} g</div>` : ''}
+      </div>`;
+  }
+
+  /* ★ 现象提示：只在加入溶液后显示，且区分"反应前 / 反应后" ★ */
+  let observeTip = '';
+  if(t.solution && !t.reacted){
+    observeTip = `
+      <div class="t3-observe-tip">
+        <div class="ot">👀 装置组装中（尚未反应）</div>
+        <div class="oc" style="color:#2c6a7d">
+          锥形瓶内是<b>蓝色</b>硫酸铜溶液，小试管内是<b>银灰色</b>铁钉，
+          两者<b>尚未接触</b>，暂时看不到明显变化。
+        </div>
+        <div class="oc" style="margin-top:6px;color:#8a6a2b">
+          提示：盖好橡胶塞并称量 m₁ 后，点击"倾斜锥形瓶"，才会出现反应现象。
+        </div>
+      </div>`;
+  }else if(t.reacted){
+    observeTip = `
+      <div class="t3-observe-tip">
+        <div class="ot">👀 反应现象（倾斜锥形瓶后）</div>
+        <div class="oc">
+          溶液：
+          <span class="dot" style="background:#3d9fe0"></span>
+          <span style="color:#2c6a7d;font-weight:600">蓝色（硫酸铜）</span>
+          <span class="arrow">→</span>
+          <span class="dot" style="background:#7fcfa8"></span>
+          <span style="color:#2f8f6b;font-weight:600">浅绿色（硫酸亚铁）</span>
+        </div>
+        <div class="oc" style="margin-top:4px">
+          铁钉：<span style="color:#8a9aa8;font-weight:600">银灰色</span>
+          <span class="arrow">→</span>
+          <span style="color:#b5651d;font-weight:600">表面有红色固体（铜）析出</span>
+        </div>
+      </div>`;
+  }
+
+  let actions = '';
+  const ready = t.balance && t.flask && t.solution && t.tube && t.stopper;
+
+  if(ready && t.m1 === null){
+    actions = `<button class="btn primary" data-act="t3-weigh1">称量反应前总质量 m₁</button>`;
+  }else if(t.m1 !== null && !t.reacted){
+    actions = `<div class="result-note warn" style="margin-bottom:0">
+        装置已密闭，反应前总质量记为 <b>${t.m1} g</b>。
+        此时铁钉与溶液<b>尚未接触</b>，溶液仍为蓝色，没有明显现象。
+      </div>
+      <button class="btn primary" data-act="t3-react">倾斜锥形瓶，使溶液进入小试管与铁钉接触</button>`;
+  }else if(t.reacted && t.m2 === null){
+    actions = `<div class="result-note warn" style="margin-bottom:0">
+        👀 请仔细观察：铁钉表面有<b>红色固体</b>析出，溶液由<b>蓝色</b>逐渐变为<b>浅绿色</b>。
+      </div>
+      <button class="btn primary" data-act="t3-weigh2">反应结束，称量反应后总质量 m₂</button>`;
+  }
+
+  let fillHTML = '';
+  if(t.m2 !== null){
+    fillHTML = `
+      <table class="input-table">
+        <thead><tr><th>项目</th><th>内容</th></tr></thead>
+        <tbody>
+          <tr><td>实验现象</td>
+            <td><textarea data-t3="phen" placeholder="例如：铁钉表面有红色固体析出，溶液由蓝色变为浅绿色">${esc(t.phen)}</textarea></td></tr>
+          <tr><td>实验结论</td>
+            <td><textarea data-t3="concl" placeholder="比较 m₁ 与 m₂，你能得出什么结论？">${esc(t.concl)}</textarea></td></tr>
+        </tbody>
+      </table>`;
+  }
+
+  return `
+    <div class="task-head">
+      <span class="task-badge">任务 3</span>
+      <h2>大胆实验 · 铁与硫酸铜反应</h2>
+    </div>
+    <div class="story">
+      <p><b>反应原理：</b>Fe + CuSO₄ = FeSO₄ + Cu</p>
+      <p><b>实验用品：</b>①天平 ②砂纸 ③铁钉 ④硫酸铜溶液 ⑤锥形瓶 ⑥小试管 ⑦橡胶塞</p>
+      <p>请按顺序组装装置：<b>打磨铁钉 → 天平 → 锥形瓶 → 硫酸铜溶液 → 小试管（含铁钉）→ 橡胶塞密封</b>，称量 m₁ 后倾斜锥形瓶，观察现象并称量 m₂。</p>
+    </div>
+    <div class="t3-panel">
+      <div class="t3-row">
+        ${nailBox}
+        <div class="t3-note">${polishNote}</div>
+      </div>
+    </div>
+    <div class="bench">${bench}</div>
+    ${trayHTML}
+    ${readout}
+    ${observeTip}
+    ${actions}
+    ${fillHTML}
+    ${done ? `<div class="result-note" style="margin-top:14px">
+        ✅ 任务 3 已完成。铁与硫酸铜反应前后总质量相等（m₁ = m₂ = ${t.m1} g），说明该反应遵守质量守恒定律。
+      </div>` : ''}
+  `;
+}
+
+/* ★ 锥形瓶 SVG：未反应时溶液始终为蓝色，反应后才变浅绿 ★ */
+function flask3SVG(t){
+  const hasLiquid = t.solution;
+  const reacted = t.reacted;
+
+  /* 关键：动画类只在 reacted 为 true 时添加 */
+  const liquidClass = reacted ? 't3-liquid' : '';
+  const nailClass   = reacted ? 't3-nail' : '';
+  const nailCapClass= reacted ? 't3-nail-cap' : '';
+
+  /* 未反应：起始蓝色；已反应：动画从蓝色到浅绿色 */
+  const liquidStartColor = '#3d9fe0';
+  /* 未反应：起始银灰；已反应：动画从银灰到红棕 */
+  const nailStartColor = '#9aa9b6';
+
+  const stopper = t.stopper ? `<rect x="50" y="0" width="40" height="14" rx="4" fill="#b08968"/>` : '';
+
+  return `
+    <svg width="140" height="150" viewBox="0 0 140 150" class="t3-flask-svg">
+      <defs>
+        <clipPath id="flaskClip3">
+          <path d="M52 10 L52 50 L20 120 Q16 132 32 132 L108 132 Q124 132 120 120 L88 50 L88 10 Z"/>
+        </clipPath>
+      </defs>
+
+      <!-- 锥形瓶瓶体 -->
+      <path d="M52 10 L52 50 L20 120 Q16 132 32 132 L108 132 Q124 132 120 120 L88 50 L88 10 Z"
+            fill="#f7fbfc" stroke="#8fbed0" stroke-width="3" stroke-linejoin="round"/>
+
+      <!-- 锥形瓶中的溶液（未反应始终蓝色；反应后动画到浅绿色） -->
+      ${hasLiquid ? `
+        <rect x="0" y="86" width="140" height="46"
+              fill="${liquidStartColor}" opacity="0.78"
+              clip-path="url(#flaskClip3)"
+              class="${liquidClass}"/>
+        <ellipse cx="70" cy="87" rx="40" ry="3"
+                 fill="#7fc9ef" opacity="0.55"
+                 clip-path="url(#flaskClip3)"/>
+      ` : ''}
+
+      <!-- 小试管（含铁钉） -->
+      ${t.tube ? `
+        <g>
+          <!-- 试管内部背景 -->
+          ${reacted
+            ? `<rect x="60" y="16" width="20" height="70" rx="4" fill="#7fcfa8" opacity="0.75"/>`
+            : `<rect x="60" y="16" width="20" height="70" rx="4" fill="rgba(255,255,255,0.5)"/>`}
+
+          <!-- 铁钉钉帽 -->
+          <rect x="62" y="19" width="16" height="5" rx="2"
+                fill="${nailStartColor}" class="${nailCapClass}"/>
+
+          <!-- 铁钉钉身 -->
+          <rect x="66" y="23" width="8" height="59" rx="2"
+                fill="${nailStartColor}" class="${nailClass}"/>
+
+          <!-- 铜析出点（仅反应后） -->
+          ${reacted ? `
+            <g class="t3-copper-dots">
+              <circle cx="67" cy="30" r="1.5" fill="#e8a87c"/>
+              <circle cx="72" cy="36" r="1.3" fill="#d4824a"/>
+              <circle cx="68" cy="42" r="1.6" fill="#e8a87c"/>
+              <circle cx="73" cy="48" r="1.4" fill="#d4824a"/>
+              <circle cx="67" cy="54" r="1.5" fill="#e8a87c"/>
+              <circle cx="72" cy="60" r="1.3" fill="#d4824a"/>
+              <circle cx="68" cy="66" r="1.4" fill="#e8a87c"/>
+              <circle cx="73" cy="72" r="1.3" fill="#d4824a"/>
+              <circle cx="68" cy="78" r="1.4" fill="#e8a87c"/>
+            </g>
+          ` : ''}
+
+          <!-- 试管外壳（透明玻璃） -->
+          <rect x="60" y="16" width="20" height="70" rx="4"
+                fill="none" stroke="#a9bcc9" stroke-width="2.5"/>
+        </g>
+      ` : ''}
+
+      ${stopper}
+    </svg>`;
+}
+
+/* =========================================================
+   11. 任务 6
+   ========================================================= */
+function task6HTML(){
+  const stage = S.t6.stage;
+  let inner = '';
+  if(stage === 'setup1')       inner = t6Setup1();
+  else if(stage === 'react1')  inner = t6React1();
+  else if(stage === 'explain1')inner = t6Explain1();
+  else if(stage === 'setup2')  inner = t6Setup2();
+  else if(stage === 'react2')  inner = t6React2();
+  else if(stage === 'explain2')inner = t6Explain2();
+  else if(stage === 'table' || stage === 'done') inner = t6Table();
+
+  return `
+    <div class="task-head">
+      <span class="task-badge">任务 6</span>
+      <h2>AI 模拟实验 · 碳酸钠与稀盐酸</h2>
+    </div>
+    <div class="story">
+      <p><b>反应原理：</b>Na₂CO₃ + 2HCl = 2NaCl + H₂O + CO₂↑</p>
+      <p>先组装<b>敞口装置</b>完成一次实验，再用<b>密闭装置</b>完成一次实验，最后对比两套实验的结果，完成实验记录表。</p>
+    </div>
+    ${inner}
+  `;
+}
+
+function t6Setup1(){
+  const L = S.t6.l1;
+  const bench = !L.balance
+    ? `<div class="drop-zone" data-drop="t6-bench">
+         <span class="dz-icon">⚖️</span>
+         <span>把【托盘天平】拖到这里</span>
+       </div>`
+    : `<div class="scale">
+        <div class="scale-arm" style="transform:rotate(0deg)">
+          <div class="pan left" data-drop="t6-pan">
+            ${L.beaker ? `<div class="beaker" data-drop="t6-beaker">
+                ${L.powder ? '<div class="powder"></div>' : ''}
+                ${L.tube ? '<div class="tube">HCl</div>' : ''}
+              </div>` : '<div class="pan-hint">放烧杯</div>'}
+            <div class="pan-plate"></div>
+          </div>
+          <div class="pan right">
+            <div class="weight">砝码</div>
+            <div class="pan-plate"></div>
+          </div>
+        </div>
+        <div class="scale-column"></div>
+        <div class="scale-base"></div>
+      </div>`;
+
+  const tray = [
+    { k:'t6-balance', icon:'⚖️', label:'托盘天平',     used:L.balance },
+    { k:'t6-beaker',  icon:'🧪', label:'烧杯',         used:L.beaker  },
+    { k:'t6-powder',  icon:'🧂', label:'碳酸钠粉末',   used:L.powder  },
+    { k:'t6-tube',    icon:'🧫', label:'稀盐酸小试管', used:L.tube    }
+  ].filter(x => !x.used);
+
+  return `
+    <div class="step-title"><span class="badge">敞口</span>组装敞口实验装置</div>
+    <div class="bench">${bench}</div>
+    ${tray.length ? `<div class="tray">${tray.map(x => `
+        <div class="tile" data-drag="${x.k}">
+          <div class="ti">${x.icon}</div><span>${x.label}</span>
+        </div>`).join('')}</div>`
+      : `<div class="tray" style="grid-template-columns:1fr">
+          <div style="text-align:center;color:#93a6b4;font-size:12.5px;padding:10px">器材已全部就位 ✔</div>
+        </div>`}
+    ${L.tube ? `
+      <div class="result-note warn" style="margin-bottom:0">
+        装置组装完毕：烧杯中有碳酸钠粉末，小试管里盛有稀盐酸，两者<b>尚未接触</b>。
+      </div>
+      <button class="btn primary" data-act="t6-react1">倾斜试管，使稀盐酸与碳酸钠接触</button>
+    ` : `<div class="hint" style="text-align:left;padding:0 4px">
+        提示：按“天平 → 烧杯 → 碳酸钠粉末 → 稀盐酸试管”的顺序依次放入。
+      </div>`}
+  `;
+}
+
+function t6React1(){
+  return `
+    <div class="step-title"><span class="badge">敞口</span>观察敞口实验现象</div>
+    <div class="bench" style="min-height:262px">
+      <div class="observe-stage">
+        <div class="gas-escape">
+          <i style="left:14%;animation-delay:0s">CO₂</i>
+          <i style="left:42%;animation-delay:.6s">CO₂</i>
+          <i style="left:68%;animation-delay:1.2s">CO₂</i>
+          <i style="left:86%;animation-delay:1.8s">CO₂</i>
+        </div>
+        <div class="big-beaker">
+          <div class="big-powder"></div>
+          <div class="big-tube">HCl</div>
+          <div class="bubbles">
+            <i style="left:16%;animation-delay:0s"></i>
+            <i style="left:38%;animation-delay:.3s"></i>
+            <i style="left:58%;animation-delay:.6s"></i>
+            <i style="left:78%;animation-delay:.9s"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="observe-tip">👀 请仔细观察：烧杯里产生了什么？那些向上飘走的 CO₂ 去了哪里？</div>
+    <button class="btn primary" data-act="t6-to-explain1">观察完毕，把烧杯放回天平左盘</button>
+  `;
+}
+
+function t6Explain1(){
+  return `
+    <div class="step-title"><span class="badge">敞口</span>敞口实验的结果</div>
+    <div class="bench" style="min-height:224px">
+      <div class="scale">
+        <div class="scale-arm" style="transform:rotate(6deg)">
+          <div class="pan left">
+            <div class="beaker"><div class="powder"></div><div class="tube">HCl</div></div>
+            <div class="pan-plate"></div>
+          </div>
+          <div class="pan right">
+            <div class="weight">砝码</div>
+            <div class="pan-plate"></div>
+          </div>
+        </div>
+        <div class="scale-column"></div>
+        <div class="scale-base"></div>
+      </div>
+    </div>
+    <div class="result-note warn">
+      <b>实验现象：</b>烧杯里产生大量气泡；把烧杯放回天平左盘后，指针明显<b>向右偏转</b>，天平不再平衡 —— 反应后总质量比反应前变小了。
+      <br><br>
+      <b>原因分析：</b>反应生成的 CO₂ 气体逸散到了空气中，没有被称量到。这<b>并不是</b>反应不遵守质量守恒定律，而是敞口装置“漏掉”了这部分气体。
+      <br><br>
+      👉 结论：<b>敞口装置不能用来验证该反应的质量守恒。</b>
+    </div>
+    <button class="btn primary" data-act="t6-to-setup2">进入密闭装置实验 →</button>
+  `;
+}
+
+function t6Setup2(){
+  const L = S.t6.l2;
+  const bench = !L.flask
+    ? `<div class="drop-zone" data-drop="t6-flask">
+         <span class="dz-icon">🧴</span>
+         <span>把【锥形瓶】拖到这里</span>
+       </div>`
+    : `<div class="flask-wrap" data-drop="t6-flask">
+         <div class="balloon-slot" data-drop="t6-balloon">
+           ${L.balloon ? '<div class="balloon inflated"></div>' : '<div class="slot-hint">🎈 套气球</div>'}
+         </div>
+         <svg class="flask" viewBox="0 0 100 120">
+           <path d="M38 10 L38 46 L14 100 Q10 112 24 112 L76 112 Q90 112 86 100 L62 46 L62 10"
+                 fill="rgba(180,220,235,.2)" stroke="#8fbed0" stroke-width="3" stroke-linejoin="round"/>
+           <rect x="34" y="4" width="32" height="9" rx="4" fill="#8fbed0"/>
+         </svg>
+         <div class="flask-inner">
+           ${L.powder ? '<div class="flask-powder"></div>' : ''}
+           ${L.tube ? '<div class="flask-tube">HCl</div>' : ''}
+         </div>
+       </div>`;
+
+  const tray = [
+    { k:'t6-flask',   icon:'🧴', label:'锥形瓶',       used:L.flask   },
+    { k:'t6-powder2', icon:'🧂', label:'碳酸钠粉末',   used:L.powder  },
+    { k:'t6-tube2',   icon:'🧫', label:'稀盐酸小试管', used:L.tube    },
+    { k:'t6-balloon', icon:'🎈', label:'气球（密封用）', used:L.balloon }
+  ].filter(x => !x.used);
+
+  return `
+    <div class="step-title"><span class="badge">密闭</span>组装密闭实验装置</div>
+    <div class="bench">${bench}</div>
+    ${tray.length ? `<div class="tray">${tray.map(x => `
+        <div class="tile" data-drag="${x.k}">
+          <div class="ti">${x.icon}</div><span>${x.label}</span>
+        </div>`).join('')}</div>`
+      : `<div class="tray" style="grid-template-columns:1fr">
+          <div style="text-align:center;color:#93a6b4;font-size:12.5px;padding:10px">器材已全部就位 ✔</div>
+        </div>`}
+    ${L.balloon ? `
+      <div class="result-note warn" style="margin-bottom:0">
+        密闭装置组装完毕：锥形瓶中有碳酸钠粉末，试管里盛有稀盐酸，瓶口已用气球密封。
+      </div>
+      <button class="btn primary" data-act="t6-react2">倾斜试管，使稀盐酸与碳酸钠接触</button>
+    ` : `<div class="hint" style="text-align:left;padding:0 4px">
+        提示：先放锥形瓶 → 加碳酸钠粉末 → 放入稀盐酸试管 → 最后套上气球密封。
+      </div>`}
+  `;
+}
+
+function t6React2(){
+  return `
+    <div class="step-title"><span class="badge">密闭</span>观察密闭实验现象</div>
+    <div class="bench" style="min-height:290px">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:18px">
+        <div class="flask-wrap" style="padding-top:80px">
+          <div class="balloon-slot"><div class="balloon inflated"></div></div>
+          <svg class="flask" viewBox="0 0 100 120">
+            <path d="M38 10 L38 46 L14 100 Q10 112 24 112 L76 112 Q90 112 86 100 L62 46 L62 10"
+                  fill="rgba(180,220,235,.2)" stroke="#8fbed0" stroke-width="3" stroke-linejoin="round"/>
+            <rect x="34" y="4" width="32" height="9" rx="4" fill="#8fbed0"/>
+          </svg>
+          <div class="flask-inner">
+            <div class="flask-powder"></div>
+            <div class="flask-tube">HCl</div>
+          </div>
+          <div class="flask-bubbles">
+            <i style="left:10%;animation-delay:0s"></i>
+            <i style="left:35%;animation-delay:.3s"></i>
+            <i style="left:60%;animation-delay:.6s"></i>
+            <i style="left:82%;animation-delay:.9s"></i>
+          </div>
+        </div>
+        <div class="balance-badge">⚖️ 天平仍然平衡</div>
+      </div>
+    </div>
+    <div class="observe-tip">👀 请仔细观察：气球发生了什么变化？天平是否仍然平衡？</div>
+    <button class="btn primary" data-act="t6-to-explain2">观察完毕，查看实验解释</button>
+  `;
+}
+
+function t6Explain2(){
+  return `
+    <div class="step-title"><span class="badge">密闭</span>密闭实验的结果</div>
+    <div class="bench" style="min-height:180px">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:14px">
+        <div style="font-size:52px">🎈</div>
+        <div class="balance-badge">⚖️ 天平保持平衡</div>
+      </div>
+    </div>
+    <div class="result-note">
+      <b>实验现象：</b>气球明显鼓起，说明有气体生成；而天平<b>仍然保持平衡</b>，总质量与反应前相等 ✔
+      <br><br>
+      <b>结论：</b>把生成的 CO₂ 也密封在体系内一起称量，就能成功验证质量守恒。
+      <br><br>
+      <b>注意事项：</b>气球鼓胀后体积变大，会受到空气浮力影响，使天平读数略微偏小。
+    </div>
+    <button class="btn primary" data-act="t6-to-table">填写实验记录表 →</button>
+  `;
+}
+
+function t6Table(){
+  const rows = T6_TABLE.map(item => {
+    const a = S.ans[item.key];
+    let cls = a ? (a.correct ? 'ok' : 'bad') : '';
+    const opts = item.opts.map((o, j) =>
+      `<option value="${j}" ${a && a.picked === j ? 'selected' : ''}>${esc(o)}</option>`).join('');
+    let hint = '';
+    if(a && !a.correct) hint = `<div class="q-hint" style="margin-top:6px">💡 ${item.hint}</div>`;
+    else if(a && a.correct) hint = `<div class="q-hint ok" style="margin-top:6px">✅ 回答正确，+${SCORE_RIGHT} 分</div>`;
+    return `<tr>
+        <td>${item.label}</td>
+        <td>
+          <select data-t6sel="${item.key}" class="${cls}" ${a ? 'disabled' : ''}>
+            <option value="">请选择</option>${opts}
+          </select>${hint}
+        </td>
+      </tr>`;
+  }).join('');
+
+  return `
+    <div class="step-title"><span class="badge">记录</span>实验记录表</div>
+    <div class="result-note" style="margin-bottom:12px">
+      请根据刚才的两套实验，完成下表。每题只有 1 次作答机会，答错会给出提示并计入错题巩固。
+    </div>
+    <table class="rec-table">
+      <thead><tr><th>项目</th><th>内容</th></tr></thead>
+      <tbody>
+        <tr><td>反应原理</td><td class="auto">Na₂CO₃ + 2HCl = 2NaCl + H₂O + CO₂↑</td></tr>
+        ${rows}
+      </tbody>
+    </table>
+    ${S.t6.done ? `<div class="result-note">
+        ✅ 任务 6 已完成。敞口装置因 CO₂ 逸散而不能验证质量守恒；改用密闭装置后，天平保持平衡，成功验证了质量守恒定律。
+      </div>` : ''}
+  `;
+}
+
+/* =========================================================
+   12. 任务 7
+   ========================================================= */
+function task7HTML(){
+  const t = S.t7;
+  const done = isTaskDone(7);
+  const selA = `<select data-sel="t7-a" class="${t.a ? (t.a === T7_A_ANS ? 'ok' : 'bad') : ''}">
+      <option value="">请选择</option>
+      ${T7_A.map(o => `<option value="${o.v}" ${t.a === o.v ? 'selected' : ''}>${o.t}</option>`).join('')}
+    </select>`;
+  const selB = `<select data-sel="t7-b" class="${t.b ? (t.b === T7_B_ANS ? 'ok' : 'bad') : ''}">
+      <option value="">请选择</option>
+      ${T7_B.map(o => `<option value="${o.v}" ${t.b === o.v ? 'selected' : ''}>${o.t}</option>`).join('')}
+    </select>`;
+  return `
+    <div class="task-head">
+      <span class="task-badge">任务 7</span>
+      <h2>归纳提炼 · 验证质量守恒的条件</h2>
+    </div>
+    <div class="story">
+      <p>综合前面的实验：波义耳的敞口容器、铁与硫酸铜的密闭装置、碳酸钠与稀盐酸的敞口与密闭对比……</p>
+      <p>请你归纳：要验证质量守恒定律，需要满足哪些必要条件？</p>
+    </div>
+    <div class="fill-block">
+      <div class="fill-title">我的归纳</div>
+      <p>① 必须发生的是 ${selA}；</p>
+      <p>② 有气体参与或生成时要 ${selB}。</p>
+    </div>
+    ${done ? `<div class="result-note">
+        ✅ 任务 7 已完成。<br><br>
+        <b>验证质量守恒定律的必要条件：</b><br>
+        ① 必须发生的是<b>化学变化</b>（质量守恒定律只适用于化学变化）；<br>
+        ② 有气体参与或生成时，必须<b>使用密闭装置</b>，把所有参与反应的物质和产物一起称量。
+      </div>` : ''}
+  `;
+}
+
+/* =========================================================
+   13. 任务页事件
+   ========================================================= */
+const taskBody = $('#task-body');
+
+taskBody.addEventListener('dropitem', e => {
+  const zone = e.target.closest('[data-drop]');
+  if(!zone) return;
+  handleDrop(zone.dataset.drop, e.detail.item);
+});
+taskBody.addEventListener('click', e => {
+  const act = e.target.closest('[data-act]');
+  if(act){ handleAct(act.dataset.act); }
+});
+taskBody.addEventListener('input', e => {
+  const ta1 = e.target.closest('textarea[data-t1]');
+  if(ta1){ S.t1[ta1.dataset.t1] = ta1.value; scheduleSave(); return; }
+  const ta3 = e.target.closest('textarea[data-t3]');
+  if(ta3){ S.t3[ta3.dataset.t3] = ta3.value; scheduleSave(); return; }
+});
+taskBody.addEventListener('focusout', e => {
+  const ta1 = e.target.closest('textarea[data-t1]');
+  if(ta1){
+    const k = ta1.dataset.t1, val = ta1.value.trim();
+    S.t1[k] = val;
+    if(val.length >= 5 && !S.awarded['t1-' + k]) award('t1-' + k, SCORE_RIGHT, `观点已记录，+${SCORE_RIGHT} 分`);
+    else save();
+    if(isTaskDone(1)) renderTask(1);
+    return;
+  }
+  const ta3 = e.target.closest('textarea[data-t3]');
+  if(ta3){
+    const k = ta3.dataset.t3, val = ta3.value.trim();
+    S.t3[k] = val;
+    if(val.length >= 5 && !S.awarded['t3-' + k]) award('t3-' + k, SCORE_RIGHT, `记录已保存，+${SCORE_RIGHT} 分`);
+    else save();
+    if(isTaskDone(3)) renderTask(3);
+  }
+});
+taskBody.addEventListener('change', e => {
+  const s1 = e.target.closest('select[data-sel="t1-s1"]');
+  if(s1){ handleT1Sel('s1', s1.value); return; }
+  const s2 = e.target.closest('select[data-sel="t1-s2"]');
+  if(s2){ handleT1Sel('s2', s2.value); return; }
+  const a = e.target.closest('select[data-sel="t7-a"]');
+  if(a){ handleT7Sel('a', a.value); return; }
+  const b = e.target.closest('select[data-sel="t7-b"]');
+  if(b){ handleT7Sel('b', b.value); return; }
+  const t6s = e.target.closest('select[data-t6sel]');
+  if(t6s){ handleT6Sel(t6s.dataset.t6sel, t6s.value); return; }
+});
+
+function handleDrop(zone, item){
+  if(currentTask === 3){
+    const t = S.t3;
+
+    if(zone === 'nail'){
+      if(item === 'paper'){
+        if(t.polished){ toast('铁钉已经打磨好了', 'warn'); return; }
+        t.polished = true;
+        award('t3-polish', SCORE_RIGHT, `铁钉已打磨，+${SCORE_RIGHT} 分`);
+        save(); renderTask(3); return;
+      }
+      logOpError('操作提示：打磨铁钉应使用砂纸。');
+      toast('这里要放砂纸哦～', 'warn'); return;
+    }
+    if(zone === 'bench' && item === 'balance' && !t.balance){
+      t.balance = true; award('t3-balance', SCORE_RIGHT, `天平已就位，+${SCORE_RIGHT} 分`);
+      save(); renderTask(3); return;
+    }
+    if(zone === 'pan' && item === 'flask' && !t.flask){
+      if(!t.balance){ logOpError('操作提示：应先把托盘天平放上实验台。'); toast('先放天平哦～', 'warn'); return; }
+      t.flask = true; award('t3-flask', SCORE_RIGHT, `锥形瓶已放上左盘，+${SCORE_RIGHT} 分`);
+      save(); renderTask(3); return;
+    }
+    if(zone === 'pan' && item === 'solution' && t.flask && !t.solution){
+      t.solution = true; award('t3-solution', SCORE_RIGHT, `硫酸铜溶液已加入，+${SCORE_RIGHT} 分`);
+      save(); renderTask(3); return;
+    }
+    if((zone === 'flask3' || zone === 'pan') && item === 'tube' && t.solution && !t.tube){
+      t.tube = true; award('t3-tube', SCORE_RIGHT, `小试管已放入锥形瓶，+${SCORE_RIGHT} 分`);
+      save(); renderTask(3); return;
+    }
+    if(zone === 'pan' && item === 'stopper' && t.tube && !t.stopper){
+      t.stopper = true; award('t3-stopper', SCORE_RIGHT, `瓶口已密封，+${SCORE_RIGHT} 分`);
+      save(); renderTask(3); return;
+    }
+    if(item === 'solution'){
+      logOpError('操作提示：应先把锥形瓶放到天平左盘，再倒入硫酸铜溶液。');
+      toast('先把锥形瓶放上左盘哦～', 'warn'); return;
+    }
+    if(item === 'tube'){
+      if(!t.polished){ logOpError('操作提示：铁钉表面有氧化膜，应先用砂纸打磨。'); toast('先用砂纸打磨铁钉哦～', 'warn'); return; }
+      if(!t.solution){ logOpError('操作提示：应先向锥形瓶中加入硫酸铜溶液，再放入小试管。'); toast('先加硫酸铜溶液哦～', 'warn'); return; }
+    }
+    if(item === 'stopper'){
+      if(!t.tube){ logOpError('操作提示：应先放入小试管（含铁钉），最后再塞上橡胶塞。'); toast('先放入小试管哦～', 'warn'); return; }
+    }
+    logOpError('操作提示：器材要放到对应位置——天平放实验台，锥形瓶放左盘，溶液倒进锥形瓶，小试管放瓶内，橡胶塞封瓶口。');
+    toast('这里不能放这个器材哦～', 'warn'); return;
+  }
+
+  if(currentTask === 6 && S.t6.stage === 'setup1'){
+    const L = S.t6.l1;
+    if(zone === 't6-bench' && item === 't6-balance' && !L.balance){
+      L.balance = true; save(); renderTask(6); toast('天平已放上实验台 ✔', 'ok'); return;
+    }
+    if(zone === 't6-pan' && item === 't6-beaker' && !L.beaker){
+      if(!L.balance){ logOpError('操作提示：应当先把托盘天平放好，再把烧杯放到左盘。'); toast('先放天平哦～', 'warn'); return; }
+      L.beaker = true; save(); renderTask(6); toast('烧杯已放上左盘 ✔', 'ok'); return;
+    }
+    if(zone === 't6-beaker' && item === 't6-powder' && !L.powder){
+      if(!L.beaker){ logOpError('操作提示：应当先把烧杯放上天平左盘，再加入碳酸钠粉末。'); toast('先把烧杯放上左盘哦～', 'warn'); return; }
+      L.powder = true; save(); renderTask(6); toast('已加入碳酸钠粉末 ✔', 'ok'); return;
+    }
+    if(zone === 't6-beaker' && item === 't6-tube' && !L.tube){
+      if(!L.powder){ logOpError('操作提示：应当先向烧杯中加入碳酸钠粉末，再放入盛有稀盐酸的小试管。'); toast('先把碳酸钠粉末放进烧杯哦～', 'warn'); return; }
+      L.tube = true; save(); renderTask(6); toast('试管已小心放入烧杯 ✔', 'ok'); return;
+    }
+    logOpError('操作提示：天平放实验台，烧杯放左盘，粉末和试管放进烧杯。');
+    toast('这里不能放这个器材哦～', 'warn'); return;
+  }
+
+  if(currentTask === 6 && S.t6.stage === 'setup2'){
+    const L = S.t6.l2;
+    if(zone === 't6-flask' && item === 't6-flask' && !L.flask){
+      L.flask = true; save(); renderTask(6); toast('锥形瓶已放好 ✔', 'ok'); return;
+    }
+    if(zone === 't6-flask' && item === 't6-powder2' && !L.powder){
+      if(!L.flask){ logOpError('操作提示：应当先把锥形瓶拖到实验台上，再加入碳酸钠粉末。'); toast('先把锥形瓶拖到实验台哦～', 'warn'); return; }
+      L.powder = true; save(); renderTask(6); toast('已加入碳酸钠粉末 ✔', 'ok'); return;
+    }
+    if(zone === 't6-flask' && item === 't6-tube2' && !L.tube){
+      if(!L.powder){ logOpError('操作提示：应当先向锥形瓶中加入碳酸钠粉末，再放入盛有稀盐酸的小试管。'); toast('先把碳酸钠粉末放进去哦～', 'warn'); return; }
+      L.tube = true; save(); renderTask(6); toast('稀盐酸试管已放入锥形瓶 ✔', 'ok'); return;
+    }
+    if((zone === 't6-balloon' || zone === 't6-flask') && item === 't6-balloon' && !L.balloon){
+      if(!L.tube){ logOpError('操作提示：应当先放入装有稀盐酸的小试管，最后再套上气球密封瓶口。'); toast('先放入装有稀盐酸的试管哦～', 'warn'); return; }
+      L.balloon = true; save(); renderTask(6); toast('气球已套紧瓶口，装置密闭 ✔', 'ok'); return;
+    }
+    logOpError('操作提示：锥形瓶放实验台，粉末和试管放进瓶内，气球套在瓶口。');
+    toast('这里不能放这个器材哦～', 'warn'); return;
+  }
+}
+
+function handleAct(act){
+  if(act === 't3-weigh1'){ S.t3.m1 = 156.2; save(); renderTask(3); toast('反应前总质量 m₁ = 156.2 g', 'ok'); return; }
+  if(act === 't3-react'){
+    S.t3.reacted = true;
+    save();
+    renderTask(3);
+    toast('👀 溶液由蓝色变为浅绿色，铁钉表面出现红色固体', 'ok');
+    return;
+  }
+  if(act === 't3-weigh2'){ S.t3.m2 = 156.2; save(); renderTask(3); toast('反应后总质量 m₂ = 156.2 g', 'ok'); return; }
+
+  if(act === 't6-react1'){ S.t6.stage = 'react1'; save(); renderTask(6); toast('反应开始，注意观察现象！', 'ok'); return; }
+  if(act === 't6-to-explain1'){ S.t6.stage = 'explain1'; save(); renderTask(6); toast('天平指针向右偏了……', 'warn'); return; }
+  if(act === 't6-to-setup2'){ S.t6.stage = 'setup2'; save(); renderTask(6); return; }
+  if(act === 't6-react2'){ S.t6.stage = 'react2'; save(); renderTask(6); toast('反应开始，气球正在鼓起！', 'ok'); return; }
+  if(act === 't6-to-explain2'){ S.t6.stage = 'explain2'; save(); renderTask(6); toast('天平竟然还是平衡的！', 'ok'); return; }
+  if(act === 't6-to-table'){ S.t6.stage = 'table'; save(); renderTask(6); return; }
+}
+
+function handleT1Sel(k, v){
+  if(!v) return;
+  S.t1[k] = v;
+  const ans = k === 's1' ? T1_S1_ANS : T1_S2_ANS;
+  const key = 't1-' + k;
+  if(v === ans){
+    award(key, SCORE_RIGHT, `回答正确，+${SCORE_RIGHT} 分`);
+  }else if(!S.awarded[key]){
+    S.awarded[key] = true; S.score -= SCORE_WRONG;
+    S.ans[key] = { picked: v, correct: false };
+    save(); toast(`回答错误，−${SCORE_WRONG} 分，已加入错题巩固`, 'err');
+  }
+  save(); renderTask(1);
+}
+
+function handleT7Sel(k, v){
+  if(!v) return;
+  S.t7[k] = v;
+  const ans = k === 'a' ? T7_A_ANS : T7_B_ANS;
+  const key = 't7-' + k;
+  if(v === ans){
+    award(key, SCORE_RIGHT, `回答正确，+${SCORE_RIGHT} 分`);
+  }else if(!S.awarded[key]){
+    S.awarded[key] = true; S.score -= SCORE_WRONG;
+    S.ans[key] = { picked: v, correct: false };
+    save(); toast(`回答错误，−${SCORE_WRONG} 分，已加入错题巩固`, 'err');
+  }
+  save(); renderTask(7);
+}
+
+function handleT6Sel(key, v){
+  if(!v) return;
+  if(S.ans[key]) return;
+  const item = T6_TABLE.find(x => x.key === key);
+  const picked = +v;
+  const correct = picked === item.ans;
+  S.ans[key] = { picked, correct };
+  if(correct){ S.score += SCORE_RIGHT; toast(`回答正确，+${SCORE_RIGHT} 分`, 'ok'); }
+  else { S.score -= SCORE_WRONG; toast(`回答错误，−${SCORE_WRONG} 分，已加入错题巩固`, 'err'); }
+  if(T6_TABLE.every(x => S.ans[x.key])) S.t6.done = true;
+  save(); renderTask(6);
+}
+
+function logOpError(text){
+  if(!S.opErrors.includes(text)) S.opErrors.push(text);
+  save();
+}
+
+/* =========================================================
+   14. 错题巩固
+   ========================================================= */
+$('#btn-wrong').onclick = () => { renderWrong(); show('screen-wrong'); };
+$('#btn-wrong-back').onclick = () => { renderHome(); show('screen-home'); };
+
+function renderWrong(){
+  const box = $('#wrong-body');
+  const wkeys = wrongKeys();
+  let html = '';
+  if(S.opErrors.length){
+    html += `<div class="step-title">🧭 操作提醒</div>
+      <div style="margin-bottom:18px">
+        ${S.opErrors.map(t => `<div class="op-error"><span class="ic">ℹ</span><span>${esc(t)}</span></div>`).join('')}
+      </div>`;
+  }
+  if(wkeys.length){
+    html += `<div class="step-title">✏️ 错题重做（答对可补回 ${SCORE_RETRY} 分）</div>`;
+    html += wkeys.map(key => {
+      let label = '', opts = [], correct = 0, hint = '';
+      if(key === 't1-s1'){ label = '波义耳实验未称量什么？'; opts = T1_S1.map(o => o.t); correct = T1_S1.findIndex(o => o.v === T1_S1_ANS);
+        hint = '提示：金属在敞口容器中加热后质量增加，是因为它和空气中的氧气结合了。所以他没有称量参加反应的氧气。'; }
+      else if(key === 't1-s2'){ label = '波义耳实验的装置是？'; opts = T1_S2.map(o => o.t); correct = T1_S2.findIndex(o => o.v === T1_S2_ANS);
+        hint = '提示：波义耳用的容器与空气是相通的，属于敞口装置。'; }
+      else if(key === 't7-a'){ label = '验证质量守恒定律，必须发生的是？'; opts = T7_A.map(o => o.t); correct = T7_A.findIndex(o => o.v === T7_A_ANS);
+        hint = '提示：质量守恒定律的适用范围是化学变化。'; }
+      else if(key === 't7-b'){ label = '有气体参与或生成时要？'; opts = T7_B.map(o => o.t); correct = T7_B.findIndex(o => o.v === T7_B_ANS);
+        hint = '提示：有气体参与或生成时，敞口装置会让气体逸散或被忽略，必须使用密闭装置把所有物质一起称量。'; }
+      else { const item = T6_TABLE.find(x => x.key === key); if(item){ label = item.label; opts = item.opts; correct = item.ans; hint = '💡 ' + item.hint; } }
+      if(!label) return '';
+      const optsHTML = opts.map((o, j) =>
+        `<div class="opt ${j === correct ? 'correct' : ''} locked">${String.fromCharCode(65 + j)}. ${esc(o)}</div>`
+      ).join('');
+      return `<div class="q-card">
+          <div class="q-title"><span class="q-no">✗</span><span>${esc(label)}</span></div>
+          <div class="opts">${optsHTML}</div>
+          <div class="q-hint">${hint}</div>
+          <div class="q-hint" style="background:#f2f8fa;border-left-color:#4a9db0;color:#3b7c8c">
+            你已经看过正确答案和提示，本题已记入巩固清单。
+          </div>
+        </div>`;
+    }).join('');
+  }
+  if(!html) html = `<div class="wrong-empty">🎉 太棒了！<br>目前没有需要巩固的错题，继续保持～</div>`;
+  box.innerHTML = html;
+}
+
+/* =========================================================
+   15. 排行榜
+   ========================================================= */
+$('#btn-rank').onclick = () => { renderRank(); show('screen-rank'); };
+$('#btn-rank-back').onclick = () => { renderHome(); show('screen-home'); };
+
+function renderRank(){
+  const all = JSON.parse(localStorage.getItem(RANK_KEY) || '{}');
+  const rows = Object.values(all).sort((a, b) => b.score - a.score || a.ts - b.ts);
+  const box = $('#rank-body');
+  if(!rows.length){ box.innerHTML = `<div class="wrong-empty">暂无数据，快开始实验吧～</div>`; return; }
+  box.innerHTML = rows.map((r, i) => {
+    const g = i === 0 ? 'g1' : i === 1 ? 'g2' : i === 2 ? 'g3' : '';
+    const me = S && r.name === S.name ? ' me' : '';
+    return `<div class="rank-row${me}">
+        <div class="rank-no ${g}">${i + 1}</div>
+        <div class="rank-name">${esc(r.name)}${me ? ' <span style="font-size:11px;color:#4a9db0">（我）</span>' : ''}</div>
+        <div class="rank-sub">${r.tasks || 0}/4 任务</div>
+        <div class="rank-score">${r.score} 分</div>
+      </div>`;
+  }).join('');
+}
+
+/* =========================================================
+   16. 实时监测
+   ========================================================= */
+$('#btn-monitor').onclick = () => { openMonitor(); };
+$('#btn-mon-back').onclick = () => { stopMonitor(); renderHome(); show('screen-home'); };
+$('#btn-mon-refresh').onclick = () => { renderMonitor(); toast('已刷新', 'ok'); };
+$('#btn-mon-export').onclick = () => { exportMonitor(); };
+
+function openMonitor(){ renderMonitorTabs(); renderMonitor(); show('screen-monitor'); startMonitorPolling(); }
+function startMonitorPolling(){
+  stopMonitor();
+  monitorTimer = setInterval(() => {
+    if($('#screen-monitor').classList.contains('active')) renderMonitor(true);
+    else stopMonitor();
+  }, 3000);
+}
+function stopMonitor(){ if(monitorTimer){ clearInterval(monitorTimer); monitorTimer = null; } }
+
+function renderMonitorTabs(){
+  const tabs = $('#mon-tabs');
+  tabs.innerHTML = TASKS.map(t => {
+    return `<button class="mon-tab ${monTask === t.id ? 'active' : ''}" data-mtask="${t.id}">
+        ${t.icon} 任务 ${t.id}
+      </button>`;
+  }).join('');
+  tabs.querySelectorAll('.mon-tab').forEach(b => {
+    b.onclick = () => { monTask = +b.dataset.mtask; renderMonitorTabs(); renderMonitor(); };
+  });
+}
+
+async function fetchAllStudents(){
+  const local = JSON.parse(localStorage.getItem(ALL_KEY) || '{}');
+  const map = {};
+  Object.values(local).forEach(s => { if(s && s.name) map[s.name] = s; });
+  let cloudState = 'off';
+  if(cloudEnabled()){
+    const res = await cloudFetchAll();
+    if(Array.isArray(res)){
+      cloudState = 'ok';
+      res.forEach(r => { if(r && r.name && r.data) map[r.name] = r.data; });
+    }else{ cloudState = 'error'; }
+  }
+  return { students: Object.values(map), cloudState };
+}
+
+async function renderMonitor(silent){
+  const banner = $('#mon-cloud-banner');
+  const summary = $('#mon-summary');
+  const box = $('#monitor-body');
+
+  const { students, cloudState } = await fetchAllStudents();
+
+  if(!cloudEnabled()){
+    banner.className = 'cloud-banner';
+    banner.innerHTML = `💾 <b>本机模式</b>：仅显示这台设备上登录过的学生。`;
+  }else if(cloudState === 'error'){
+    banner.className = 'cloud-banner err';
+    banner.innerHTML = `⚠ <b>云端连接失败</b>：请检查 Supabase 项目里是否已创建 <b>students</b> 数据表，且 RLS 允许匿名读写。`;
+  }else{
+    banner.className = 'cloud-banner';
+    banner.innerHTML = `☁️ <b>云端同步已开启</b>：所有设备的数据会实时汇总到此处。`;
+  }
+
+  const taskStats = TASKS.map(t => {
+    let done = 0, started = 0;
+    students.forEach(st => {
+      if(isTaskDoneState(st, t.id)) done++;
+      if(taskStarted(st, t.id)) started++;
+    });
+    return { id:t.id, done, started, total:students.length };
+  });
+  const cur = taskStats.find(x => x.id === monTask) || { done:0, started:0, total:0 };
+
+  summary.innerHTML = `
+    学生总数：<b>${students.length}</b> 人 &nbsp;·&nbsp;
+    任务 ${monTask}：<span class="hl">${cur.done}</span> 人完成
+    / ${cur.started} 人作答 &nbsp;·&nbsp;
+    完成率 <span class="hl">${students.length ? Math.round(cur.done / students.length * 100) : 0}%</span>
+  `;
+
+  if(!students.length){
+    box.innerHTML = `<div class="mon-empty">暂无学生数据。<br>学生登录并开始实验后，这里会实时出现他们的作答内容。</div>`;
+    return;
+  }
+
+  const list = students
+    .filter(st => taskStarted(st, monTask))
+    .sort((a, b) => (b.score || 0) - (a.score || 0));
+
+  if(!list.length){
+    box.innerHTML = `<div class="mon-empty">目前还没有学生开始任务 ${monTask}。<br>完成作答后会自动出现在这里。</div>`;
+    return;
+  }
+
+  box.innerHTML = list.map(st => {
+    const { rows, total, answered } = taskFields(st, monTask);
+    const allDone = answered === total;
+    return `
+      <div class="mon-card">
+        <div class="mon-card-head">
+          <div class="nm">${esc(st.name)}</div>
+          <div class="pgs ${allDone ? 'all' : ''}">已答 ${answered}/${total}</div>
+          <div class="sc">${st.score || 0} 分</div>
+        </div>
+        <div class="mon-card-body">${rows}</div>
+      </div>`;
+  }).join('');
+
+  if(!silent) updateHUD();
+}
+
+function taskStarted(st, id){
+  if(!st) return false;
+  if(id === 1){ const t = st.t1 || {}; return !!(t.v1 || t.v2 || t.v3 || t.v4 || t.s1 || t.s2); }
+  if(id === 3){ const t = st.t3 || {}; return !!(t.polished || t.balance || t.m1 !== null || t.phen || t.concl); }
+  if(id === 6){
+    const t = st.t6 || {}; const ans = st.ans || {};
+    const anyAns = T6_TABLE.some(x => ans[x.key]);
+    return !!(anyAns || (t.l1 && (t.l1.balance || t.l1.beaker)) || (t.l2 && (t.l2.flask || t.l2.balloon)));
+  }
+  if(id === 7){ const t = st.t7 || {}; return !!(t.a || t.b); }
+  return false;
+}
+
+function taskFields(st, id){
+  const rows = [];
+  let total = 0, answered = 0;
+  const add = (k, v, cls) => {
+    total++;
+    const empty = !v || String(v).trim() === '';
+    if(!empty) answered++;
+    rows.push(`<div class="mon-row">
+        <div class="k">${k}</div>
+        <div class="v ${empty ? 'empty' : (cls ? cls + ' tag' : '')}">${empty ? '未填写' : esc(v)}</div>
+      </div>`);
+  };
+  const optText = (arr, v) => { const o = arr.find(x => x.v === v); return o ? o.t : ''; };
+
+  if(id === 1){
+    const t = st.t1 || {};
+    add('装置问题', t.v1); add('称量对象', t.v2); add('证据问题', t.v3); add('改进建议', t.v4);
+    add('小结①', optText(T1_S1, t.s1), t.s1 === T1_S1_ANS ? 'right' : (t.s1 ? 'wrong' : ''));
+    add('小结②', optText(T1_S2, t.s2), t.s2 === T1_S2_ANS ? 'right' : (t.s2 ? 'wrong' : ''));
+  }
+  else if(id === 3){
+    const t = st.t3 || {};
+    add('反应前 m₁', t.m1 !== null && t.m1 !== undefined ? t.m1 + ' g' : '');
+    add('反应后 m₂', t.m2 !== null && t.m2 !== undefined ? t.m2 + ' g' : '');
+    add('实验现象', t.phen); add('实验结论', t.concl);
+  }
+  else if(id === 6){
+    const ans = st.ans || {};
+    T6_TABLE.forEach(item => {
+      const a = ans[item.key];
+      const txt = a ? item.opts[a.picked] : '';
+      const cls = a ? (a.correct ? 'right' : 'wrong') : '';
+      add(item.label, txt, cls);
+    });
+  }
+  else if(id === 7){
+    const t = st.t7 || {};
+    add('① 必须发生', optText(T7_A, t.a), t.a === T7_A_ANS ? 'right' : (t.a ? 'wrong' : ''));
+    add('② 气体条件', optText(T7_B, t.b), t.b === T7_B_ANS ? 'right' : (t.b ? 'wrong' : ''));
+  }
+
+  return { rows: rows.join(''), total, answered };
+}
+
+function exportMonitor(){
+  const all = JSON.parse(localStorage.getItem(ALL_KEY) || '{}');
+  const students = Object.values(all);
+  if(!students.length){ toast('暂无数据可导出', 'warn'); return; }
+  const optText = (arr, v) => { const o = arr.find(x => x.v === v); return o ? o.t : ''; };
+  const t6Text = (st, key) => {
+    const item = T6_TABLE.find(x => x.key === key);
+    const a = (st.ans || {})[key];
+    return item && a ? item.opts[a.picked] : '';
+  };
+  const header = ['姓名','总分','任务1-装置','任务1-称量','任务1-证据','任务1-改进',
+    '任务1-小结1','任务1-小结2','任务3-m1','任务3-m2','任务3-现象','任务3-结论',
+    '任务6-现象','任务6-示数','任务6-原因','任务6-能否验证','任务6-改进',
+    '任务7-①','任务7-②'];
+  const rows = students.map(st => {
+    const t1 = st.t1 || {}, t3 = st.t3 || {}, t7 = st.t7 || {};
+    return [
+      st.name, st.score || 0,
+      t1.v1 || '', t1.v2 || '', t1.v3 || '', t1.v4 || '',
+      optText(T1_S1, t1.s1), optText(T1_S2, t1.s2),
+      t3.m1 !== null ? t3.m1 : '', t3.m2 !== null ? t3.m2 : '',
+      t3.phen || '', t3.concl || '',
+      t6Text(st, 't6-phen'), t6Text(st, 't6-change'), t6Text(st, 't6-reason'),
+      t6Text(st, 't6-verify'), t6Text(st, 't6-improve'),
+      optText(T7_A, t7.a), optText(T7_B, t7.b)
+    ];
+  });
+  const csv = [header, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\r\n');
+  const blob = new Blob(['\ufeff' + csv], { type:'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `监测数据_${new Date().toLocaleDateString('zh-CN').replace(/\//g, '-')}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('已导出 CSV 文件', 'ok');
+}
+
+/* =========================================================
+   17. 二维码（本地生成）
+   ========================================================= */
+$('#btn-qr').onclick = () => showQR();
+$('#btn-qr-login').onclick = () => showQR();
+
+function showQR(){
+  const rawUrl = location.href.split('#')[0];
+  const isFile = location.protocol === 'file:';
+  const isLocalhost = /^https?:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0)(:|\/|$)/i.test(rawUrl);
+  const mask = document.createElement('div');
+  mask.className = 'modal-mask';
+
+  let warnHTML = '';
+  if(isFile){
+    warnHTML = `<div class="qr-warn">
+        <b>⚠ 当前是本地文件地址</b><br>
+        你正在用 file:// 方式打开页面，二维码内容是本地路径，手机扫码无法访问。<br>
+        <b>请先把本文件上传到任意静态托管服务（如 Vercel / Netlify / GitHub Pages / Cloudflare Pages）</b>，
+        再用上线后的网址打开本页，重新生成二维码即可扫码进入。
+      </div>`;
+  }else if(isLocalhost){
+    warnHTML = `<div class="qr-warn">
+        <b>⚠ 当前是本地调试地址</b><br>
+        手机和电脑不在同一网络下时，扫码将无法访问。<br>
+        如需手机测试，可把电脑 IP 替换到地址栏，或直接部署到公网后生成二维码。
+      </div>`;
+  }
+
+  mask.innerHTML = `<div class="modal" style="max-width:400px">
+      <h3>📱 专属二维码</h3>
+      <div class="modal-body">
+        <div class="qr-wrap">
+          <div class="qr-box"><canvas id="qr-canvas" width="248" height="248"></canvas></div>
+          ${warnHTML}
+          <div style="font-size:12px;color:#6f8395;margin-bottom:8px;text-align:left;margin-top:14px">
+            二维码内容（当前页面地址）：
+          </div>
+          <div class="qr-url" id="qr-url">${esc(rawUrl)}</div>
+          <div style="display:flex;gap:8px">
+            <button class="btn" style="flex:1" id="qr-copy">📋 复制链接</button>
+            <button class="btn" style="flex:1" id="qr-open">🔗 新窗口打开</button>
+          </div>
+          <div class="qr-tip">
+            <b>使用说明：</b><br>
+            • 二维码由本地算法生成，不依赖网络，断网也能显示；<br>
+            • 部署到固定网址后，此二维码永久有效；<br>
+            • 学生扫码即可直接进入实验室，无需发送任何文件。
+          </div>
+        </div>
+      </div>
+      <button class="btn primary" id="qr-close">关闭</button>
+    </div>`;
+  document.body.appendChild(mask);
+  requestAnimationFrame(()=> mask.classList.add('show'));
+
+  try{
+    const canvas = mask.querySelector('#qr-canvas');
+    QRCode.render(rawUrl, canvas, 220);
+  }catch(err){
+    console.warn('QR render failed', err);
+    mask.querySelector('.qr-box').innerHTML = `<div style="padding:30px 16px;font-size:12px;color:#a54440;line-height:1.8;text-align:center">
+        二维码生成失败<br>请直接复制下方链接分享
+      </div>`;
+  }
+
+  mask.querySelector('#qr-close').onclick = closeQR;
+  mask.querySelector('#qr-copy').onclick = async () => {
+    try{ await navigator.clipboard.writeText(rawUrl); toast('链接已复制', 'ok'); }
+    catch(e){
+      const r = document.createRange();
+      r.selectNodeContents(mask.querySelector('#qr-url'));
+      const sel = window.getSelection();
+      sel.removeAllRanges(); sel.addRange(r);
+      toast('请手动复制选中的链接', 'warn');
+    }
+  };
+  mask.querySelector('#qr-open').onclick = () => window.open(rawUrl, '_blank');
+  mask.onclick = e => { if(e.target === mask) closeQR(); };
+  function closeQR(){ mask.classList.remove('show'); setTimeout(()=> mask.remove(), 260); }
+}
+
+/* =========================================================
+   18. 重置
+   ========================================================= */
+$('#btn-restart').onclick = () => {
+  showModal('清空记录', `
+    <p style="text-align:center">确定要清空本次全部实验记录并重新开始吗？<br>
+    <span style="font-size:12.5px;color:#6f8395">得分、错题、操作记录都会一起清空。</span></p>
+  `, () => {
+    const name = S.name;
+    S = blankState(name);
+    save();
+    renderHome();
+    show('screen-home');
+    toast('记录已清空，可以重新开始', 'ok');
+  }, '确定清空');
+};
+
+/* =========================================================
+   19. 离开前强制保存
+   ========================================================= */
+window.addEventListener('beforeunload', () => { if(S) save(); });
+document.addEventListener('visibilitychange', () => {
+  if(document.visibilityState === 'hidden' && S) save();
+});
+window.addEventListener('storage', e => {
+  if(e.key === RANK_KEY && $('#screen-rank').classList.contains('active')) renderRank();
+  if(e.key === ALL_KEY && $('#screen-monitor').classList.contains('active')) renderMonitor(true);
+});
+
+/* =========================================================
+   20. 启动
+   ========================================================= */
+Drag.init();
+updateHUD();
+</script>
+</body>
+</html>
